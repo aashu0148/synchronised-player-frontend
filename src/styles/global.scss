@@ -64,6 +64,37 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.icon {
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 200ms;
+  width: fit-content;
+  height: fit-content;
+  cursor: pointer;
+  border-radius: 50%;
+
+  &:hover {
+    background-color: $white-2;
+  }
+
+  svg {
+    height: 18px;
+    width: 18px;
+    color: $gray-2;
+  }
+
+  @media (max-width: $breakpoint-md) {
+    svg {
+      height: 16px;
+      width: 16px;
+    }
+  }
 }
 
 .button {

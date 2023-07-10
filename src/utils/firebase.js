@@ -25,25 +25,13 @@ const storage = getStorage(app);
 
 const googleAuthProvider = new GoogleAuthProvider();
 
-const uploadImage = (file, progressCallback, urlCallback, errorCallback) => {
+const uploadAudio = (file, progressCallback, urlCallback, errorCallback) => {
   if (!file) {
     errorCallback("File not found");
     return;
   }
 
-  const fileType = file.type;
-  const fileSize = file.size / 1024 / 1024;
-
-  if (!fileType.includes("image")) {
-    errorCallback("File must an image");
-    return;
-  }
-  if (fileSize > 4) {
-    errorCallback("File must smaller than 4MB");
-    return;
-  }
-
-  const storageRef = ref(storage, `images/${file.name}`);
+  const storageRef = ref(storage, `songs/${file.name}`);
 
   const task = uploadBytesResumable(storageRef, file);
 
@@ -62,6 +50,10 @@ const uploadImage = (file, progressCallback, urlCallback, errorCallback) => {
       });
     }
   );
+
+  const cancelUpload = () => task.cancel();
+
+  return cancelUpload;
 };
 
-export { app as default, auth, googleAuthProvider, uploadImage };
+export { app as default, auth, googleAuthProvider, uploadAudio };

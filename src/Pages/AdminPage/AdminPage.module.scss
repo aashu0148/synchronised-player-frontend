@@ -22,3 +22,52 @@
     }
   }
 }
+
+.container {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+
+  .heading {
+    font-size: 28px;
+    line-height: 30px;
+    font-weight: bold;
+  }
+
+  .songs {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .head {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .song {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      align-items: center;
+      background-color: $white;
+      padding: 8px 18px;
+      border-radius: 5px;
+
+      .title {
+        font-size: 16px;
+        line-height: 25px;
+        font-weight: 600;
+      }
+
+      .right {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+    }
+  }
+}
