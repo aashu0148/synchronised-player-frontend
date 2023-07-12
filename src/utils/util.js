@@ -145,6 +145,15 @@ export const getFileHashSha256 = async (blob) => {
   return hashArray.map((h) => h.toString(16).padStart(2, "0")).join("");
 };
 
+export function formatSecondsToMinutesSeconds(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = parseInt(seconds % 60);
+
+  return `${minutes}:${
+    remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds
+  }`;
+}
+
 export const compareTwoObjects = (obj1, obj2) => {
   if (!obj1 || !obj2) return false;
   if (Object.keys(obj1).length !== Object.keys(obj2).length) return false;

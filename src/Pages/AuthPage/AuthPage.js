@@ -19,7 +19,7 @@ import styles from "./AuthPage.module.scss";
 function AuthPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const userDetails = useSelector((state) => state.root);
+  const userDetails = useSelector((state) => state.root.user);
 
   const [loading, setLoading] = useState(true);
 

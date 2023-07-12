@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import io from "socket.io-client";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-hot-toast";
 
 import Button from "Components/Button/Button";
 import Spinner from "Components/Spinner/Spinner";
 import CreateRoomModal from "./CreateRoomModal/CreateRoomModal";
 
-import { getAllRooms } from "apis/room";
+import { deleteRoom, getAllRooms } from "apis/room";
 import { getRandomInteger } from "utils/util";
+import actionTypes from "store/actionTypes";
 
 import styles from "./HomePage.module.scss";
 
@@ -14,7 +16,6 @@ const lightColors = [
   "#fff",
   "#fff4fb",
   "#F9F5F6",
-  "#AEE2FF",
   "#FBFFDC",
   "#F9FBE7",
   "#E6FFFD",
@@ -24,14 +25,57 @@ const lightColors = [
   "#EFFFFD",
   "#ffffff",
 ];
-const backendUrl = process.env.REACT_APP_BACKEND_URL;
-let socket;
-function HomePage() {
+function HomePage({ socket }) {
+  const dispatch = useDispatch();
+  const userDetails = useSelector((state) => state.root.user);
+  const roomDetails = useSelector((state) => state.root.room);
+  const joiningRoom = useSelector((state) => state.root.joiningRoom);
+
   const [loadingPage, setLoadingPage] = useState(true);
   const [rooms, setRooms] = useState([]);
   const [openModals, setOpenModals] = useState({
     create: false,
   });
+  const [deletingRoom, setDeletingRoom] = useState("");
+
+  const handleDeleteRoom = async (rid) => {
+    if (deletingRoom) return;
+
+    setDeletingRoom(rid);
+    const res = await deleteRoom(rid);
+    setDeletingRoom("");
+    if (!res) return;
+
+    toast.success("Room deleted!");
+    setRooms((prev) => prev.filter((item) => item._id !== rid));
+  };
+
+  const handleJoinRoom = async (rid) => {
+    if (!socket) {
+      toast.error("Socket connection not available!");
+      return;
+    }
+
+    dispatch({ type: actionTypes.JOINING_ROOM, roomId: rid });
+    socket.emit("join-room", {
+      roomId: rid,
+      userId: userDetails._id,
+      ...userDetails,
+    });
+  };
+
+  const handleLeaveRoom = async (rid) => {
+    if (!socket) {
+      toast.error("Socket connection not available!");
+      return;
+    }
+
+    socket.emit("leave-room", {
+      roomId: rid,
+      userId: userDetails._id,
+      ...userDetails,
+    });
+  };
 
   const fetchAllRooms = async () => {
     const res = await getAllRooms();
@@ -46,24 +90,8 @@ function HomePage() {
     );
   };
 
-  const handleSocketConnection = () => {
-    socket.on("connect", () => {
-      console.log("Connection", socket);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("Disconnected", socket);
-    });
-  };
-
   useEffect(() => {
-    socket = io(backendUrl);
-    handleSocketConnection();
     fetchAllRooms();
-
-    return () => {
-      socket.disconnect();
-    };
   }, []);
 
   return loadingPage ? (
@@ -104,9 +132,11 @@ function HomePage() {
 
                 <div className={styles.songs}>
                   {item.playlist.length ? (
-                    item.playlist
-                      .slice(0, 5)
-                      .map((s) => <div className={styles.song}>{s.title}</div>)
+                    item.playlist.slice(0, 5).map((s) => (
+                      <div className={styles.song} key={s._id}>
+                        {s.title}
+                      </div>
+                    ))
                   ) : (
                     <p>No songs for now!</p>
                   )}
@@ -123,9 +153,34 @@ function HomePage() {
                 </div>
 
                 <div className={styles.buttons}>
-                  {/* <Button redButton>Delete room</Button> */}
+                  {userDetails._id == item.owner?._id && (
+                    <Button
+                      redButton
+                      onClick={() => handleDeleteRoom(item._id)}
+                      disabled={deletingRoom == item._id}
+                      useSpinnerWhenDisabled
+                    >
+                      Delete room
+                    </Button>
+                  )}
 
-                  <Button>Join room</Button>
+                  {roomDetails._id == item._id ? (
+                    <Button
+                      // className={styles.greenBtn}
+                      redButton
+                      onClick={() => handleLeaveRoom(item._id)}
+                    >
+                      Leave room ?
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => handleJoinRoom(item._id)}
+                      disabled={joiningRoom == item._id}
+                      useSpinnerWhenDisabled
+                    >
+                      Join room
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

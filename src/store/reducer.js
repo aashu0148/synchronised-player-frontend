@@ -1,16 +1,31 @@
 import actionTypes from "./actionTypes";
 
 const initialState = {
+  user: {},
   mobileView: false,
+  room: {},
+  joiningRoom: "",
 };
 
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
+    case actionTypes.JOINING_ROOM: {
+      return { ...state, joiningRoom: action.roomId };
+    }
+    case actionTypes.ADD_ROOM: {
+      return { ...state, room: { ...action.room }, joiningRoom: "" };
+    }
+    case actionTypes.UPDATE_ROOM: {
+      return { ...state, room: { ...state.room, ...action.room } };
+    }
+    case actionTypes.DELETE_ROOM: {
+      return { ...state, room: {} };
+    }
     case actionTypes.USER_LOGIN: {
-      return { ...state, ...action.user };
+      return { ...state, user: { ...action.user } };
     }
     case actionTypes.USER_LOGOUT: {
-      return {};
+      return { user: {} };
     }
     case actionTypes.SET_MOBILE_VIEW: {
       return { ...state, mobileView: action.isMobileView ? true : false };

@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import Spinner from "Components/Spinner/Spinner";
 
 function ProtectedRoute({ children }) {
-  const userDetails = useSelector((state) => state.root);
+  const userDetails = useSelector((state) => state.root.user);
 
   if (!userDetails._id) {
     window.location.replace("/auth");
