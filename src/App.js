@@ -8,6 +8,7 @@ import PageNotFound from "Pages/PageNotFound/PageNotFound";
 import AdminPage from "Pages/AdminPage/AdminPage";
 import AppLayout from "Components/AppLayout/AppLayout";
 import AuthPage from "Pages/AuthPage/AuthPage";
+import HomePage from "Pages/HomePage/HomePage";
 import Spinner from "Components/Spinner/Spinner";
 
 import actionTypes from "store/actionTypes";
@@ -95,7 +96,7 @@ function App() {
             }
           >
             <Route path="/admin" element={<AdminPage />} />
-            <Route path="/" element={<h1>Home page</h1>} />
+            <Route path="/" element={<HomePage />} />
           </Route>
 
           <Route path="/*" element={<PageNotFound />} />

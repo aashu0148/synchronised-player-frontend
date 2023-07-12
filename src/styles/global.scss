@@ -39,13 +39,13 @@ a {
     }
 
     &::-webkit-scrollbar-thumb {
-      background-color: $gray;
+      background-color: $white-2;
       border-radius: 12px;
       cursor: pointer;
     }
 
     &::-webkit-scrollbar-thumb:hover {
-      background-color: #666666;
+      background-color: #9f999f;
     }
   }
 }

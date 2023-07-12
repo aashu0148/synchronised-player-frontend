@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import notFoundImage from "assets/images/not-found.jpg";
+import notFoundImage from "assets/images/not-found.png";
 
 import styles from "./PageNotFound.module.scss";
 
@@ -26,10 +26,12 @@ function PageNotFound() {
   };
 
   useEffect(() => {
-    if (window.location.pathname === "/" || interval) return;
+    if (window.location.pathname === "/") return;
 
     setSeconds(15);
     startTimer();
+
+    return () => clearInterval(interval);
   }, []);
 
   return (

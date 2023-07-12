@@ -118,6 +118,13 @@ export const fetchWrapper = async (
   return fetch(url, fetchOptions);
 };
 
+export function getRandomInteger(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 export const validateEmail = (email) => {
   if (!email) return false;
   return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);

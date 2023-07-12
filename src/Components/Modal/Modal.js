@@ -13,6 +13,7 @@ function Modal({
   noTopPadding,
   styleToInner,
   hideCloseButton = false,
+  closeOnBlur = true,
   ...props
 }) {
   const containerRef = useRef();
@@ -57,7 +58,9 @@ function Modal({
       ref={containerRef}
       className={`${styles.container} ${className || ""}`}
       onClick={(event) =>
-        event.target == containerRef.current && onClose ? onClose() : ""
+        event.target == containerRef.current && onClose && closeOnBlur
+          ? onClose()
+          : ""
       }
     >
       <div

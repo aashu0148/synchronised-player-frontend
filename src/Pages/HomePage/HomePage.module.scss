@@ -1,0 +1,117 @@
+@import "styles/variables";
+
+.container {
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+
+  .header {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    align-items: center;
+
+    .title {
+      font-size: 26px;
+      font-weight: bold;
+    }
+  }
+
+  .rooms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+
+    .room {
+      align-self: stretch;
+      width: min(100%, 450px);
+      padding: 15px 25px;
+      border-radius: 10px;
+      background-color: $white;
+      box-sizing: $shadow-1;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+
+      .title {
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .playlist {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        // background-color: $white;
+        // padding: 15px;
+        // border-radius: 10px;
+
+        label {
+          font-size: 18px;
+          line-height: 22px;
+          font-weight: 600;
+          color: $gray-2;
+        }
+
+        .songs {
+          width: 100%;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 20px;
+          row-gap: 10px;
+          align-items: center;
+
+          .song {
+            padding: 6px 12px;
+            border-radius: 30px;
+            background-color: $pinkish-white;
+            background-color: $white-1;
+            font-size: 16px;
+            font-weight: 600;
+          }
+        }
+      }
+
+      .footer {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+
+        .buttons {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          align-items: center;
+
+          button {
+            padding: 6px 12px;
+            font-weight: 600;
+          }
+        }
+      }
+
+      .user {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+
+        .image {
+          img {
+            height: 35px;
+            width: 35px;
+            border-radius: 50%;
+          }
+        }
+
+        .name {
+          text-transform: capitalize;
+          font-size: 20px;
+          margin-top: -6px;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}

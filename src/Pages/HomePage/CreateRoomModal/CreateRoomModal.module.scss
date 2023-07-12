@@ -1,0 +1,47 @@
+@import "styles/variables";
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding: 25px;
+  width: 550px;
+  max-width: 100%;
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+
+    .songs {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      row-gap: 10px;
+      align-items: center;
+
+      .song {
+        padding: 6px 12px;
+        border-radius: 30px;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        background-color: $pinkish-white;
+
+        p {
+          font-size: 14px;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .footer {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+  }
+}

@@ -61,6 +61,25 @@ function AddSongModal({ onClose, onSuccess }) {
     };
   };
 
+  const readAudio = (file) => {
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      audioElemRef.current.src = e.target.result;
+      audioElemRef.current.addEventListener(
+        "loadedmetadata",
+        function () {
+          const duration = parseInt(audioElemRef.current.duration);
+
+          setValues((prev) => ({ ...prev, length: duration }));
+        },
+        false
+      );
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (uploadDetails.uploading) {
@@ -106,6 +125,7 @@ function AddSongModal({ onClose, onSuccess }) {
           url,
           fileType: file.type,
         }));
+        readAudio(file);
         setErrors((prev) => ({ ...prev, file: "" }));
       },
       (err) => {
@@ -145,14 +165,13 @@ function AddSongModal({ onClose, onSuccess }) {
   };
 
   const handleSubmission = async () => {
-    if (!validateForm()) return;
+    if (!validateForm() || uploadDetails.uploading) return;
 
     const hash = await getFileHashSha256(values.file);
-    const length = parseInt(audioElemRef.current.duration) || 0;
 
     const body = {
       hash,
-      length,
+      length: values.length,
       title: values.title.trim(),
       artist: values.artist.trim(),
       fileType: values.fileType,
@@ -170,7 +189,7 @@ function AddSongModal({ onClose, onSuccess }) {
   };
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onClose={onClose} closeOnBlur={false}>
       <div className={styles.container}>
         <input
           type="file"
@@ -212,11 +231,9 @@ function AddSongModal({ onClose, onSuccess }) {
             <audio
               className={styles.audioElem}
               ref={audioElemRef}
-              src={uploadDetails.url}
               controls
               style={{
-                display:
-                  uploadDetails.url && !uploadDetails.uploading ? "" : "none",
+                display: values.file && !uploadDetails.uploading ? "" : "none",
               }}
             />
           </div>
