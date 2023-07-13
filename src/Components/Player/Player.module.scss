@@ -58,6 +58,23 @@
     }
   }
 
+  .expandButton {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    padding: 6px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $white;
+
+    svg {
+      height: 18px;
+      width: 18px;
+    }
+  }
+
   .inactiveOverlay {
     display: none;
     z-index: -1;
@@ -193,6 +210,51 @@
 
   .right {
     width: min(100%, 320px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .title {
+      font-size: 18px;
+      line-height: 25px;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      color: $white;
+      text-align: end;
+      text-transform: capitalize;
+    }
+
+    .btns {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      justify-content: flex-end;
+
+      // .moreBtn {
+      //   background-color: $yellow;
+      // }
+    }
+
+    .btn {
+      padding: 5px 11px;
+      font-size: 14px;
+
+      svg {
+        height: 16px;
+        width: 16px;
+      }
+    }
+  }
+
+  @media (max-width: $breakpoint-md) {
+    justify-content: center;
+
+    .left,
+    .right {
+      display: none;
+    }
   }
 }
 

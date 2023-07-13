@@ -146,7 +146,11 @@ function HomePage({ socket }) {
               <div className={styles.footer}>
                 <div className={styles.user}>
                   <div className={styles.image}>
-                    <img src={item.owner.profileImage} alt={item.owner.name} />
+                    <img
+                      src={item.owner.profileImage}
+                      rel="no-referrer"
+                      alt={item.owner.name}
+                    />
                   </div>
 
                   <p className={styles.name}>{item.owner.name}</p>

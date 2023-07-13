@@ -1,17 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { ChevronUp, Headphones, LogOut, Pause, Play } from "react-feather";
 import { toast } from "react-hot-toast";
 
-import styles from "./Player.module.scss";
+import Button from "Components/Button/Button";
+import PlayerDetailsModal from "./PlayerDetailsModal/PlayerDetailsModal";
+
 import { formatSecondsToMinutesSeconds } from "utils/util";
 import actionTypes from "store/actionTypes";
-import { Headphones, Pause, Play } from "react-feather";
 import {
   nextPlayIcon,
   pauseIcon,
   playIcon,
   previousPlayIcon,
 } from "utils/svgs";
+
+import styles from "./Player.module.scss";
 
 let debounceTimeout,
   bufferCheckingInterval,
@@ -28,11 +32,14 @@ function Player({ socket }) {
   const dispatch = useDispatch();
   const roomDetails = useSelector((state) => state.root.room);
   const userDetails = useSelector((state) => state.root.user);
+  const isMobileView = useSelector((state) => state.root.mobileView);
 
   const [inputElemProgress, setInputElemProgress] = useState(0);
   const [audioElemCurrTime, setAudioElemCurrTime] = useState(0);
   const [isBuffering, setIsBuffering] = useState(false);
   const [isFirstRender, setIsFirstRender] = useState(true);
+  const [showMoreDetailsModal, setShowMoreDetailsModal] = useState(false);
+  const [roomNotifications, setRoomNotifications] = useState([]);
 
   const isPlayerActive = roomDetails?._id ? true : false;
   const currentSong =
@@ -95,6 +102,13 @@ function Player({ socket }) {
     });
   };
 
+  const handleLeaveRoomClick = () => {
+    socket.emit("leave-room", {
+      roomId: roomDetails._id,
+      userId: userDetails._id,
+    });
+  };
+
   const handleSocketEvents = () => {
     socket.on("seek", (data) => {
       if (isNaN(data?.secondsPlayed)) return;
@@ -116,11 +130,33 @@ function Player({ socket }) {
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
     });
 
+    socket.on("notification", (msg) => {
+      setRoomNotifications((prev) => [
+        ...prev,
+        typeof msg == "object" ? { ...msg, timestamp: Date.now() } : {},
+      ]);
+    });
+
     socket.on("left-room", () => {
       if (audioElemRef.current) audioElemRef.current?.pause();
 
       dispatch({ type: actionTypes.DELETE_ROOM });
     });
+
+    socket.on("users-change", (data) => {
+      if (!data?._id) return;
+
+      dispatch({
+        type: actionTypes.UPDATE_ROOM,
+        room: { users: data.users },
+      });
+    });
+  };
+
+  const handleInputMousedown = () => {
+    progressDetails.mouseDown = true;
+    progressDetails.song = currentSong;
+    progressDetails.roomId = roomDetails._id;
   };
 
   const handleMouseUp = () => {
@@ -140,7 +176,7 @@ function Player({ socket }) {
 
     const currSeconds = event.target.currentTime;
 
-    if (parseInt(currSeconds) == parseInt(currentSong.length))
+    if (parseInt(currSeconds) >= parseInt(currentSong.length))
       handleNextClick();
     setAudioElemCurrTime(currSeconds);
   };
@@ -197,7 +233,7 @@ function Player({ socket }) {
     if (isFirstRender) return;
 
     updateAudioElementWithControls(roomDetails);
-  }, [roomDetails]);
+  }, [roomDetails.currentSong, roomDetails.secondsPlayed, roomDetails.paused]);
 
   useEffect(() => {
     globalBufferingVariable = isBuffering;
@@ -216,9 +252,11 @@ function Player({ socket }) {
     }
 
     document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("touchend", handleMouseUp);
 
     return () => {
       document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("touchend", handleMouseUp);
     };
   }, []);
 
@@ -232,7 +270,23 @@ function Player({ socket }) {
     <div
       className={`${styles.container} ${isPlayerActive ? "" : styles.inactive}`}
     >
+      {showMoreDetailsModal && (
+        <PlayerDetailsModal
+          onClose={() => setShowMoreDetailsModal(false)}
+          notifications={roomNotifications}
+        />
+      )}
       <div className={styles.inactiveOverlay} />
+
+      {isMobileView && (
+        <div
+          className={styles.expandButton}
+          onClick={() => setShowMoreDetailsModal(true)}
+        >
+          <ChevronUp />
+        </div>
+      )}
+
       <audio
         ref={audioElemRef}
         style={{ display: "none" }}
@@ -299,11 +353,8 @@ function Player({ socket }) {
 
             <input
               type="range"
-              onMouseDown={() => {
-                progressDetails.mouseDown = true;
-                progressDetails.song = currentSong;
-                progressDetails.roomId = roomDetails._id;
-              }}
+              onMouseDown={handleInputMousedown}
+              onTouchStart={handleInputMousedown}
               onChange={(event) => {
                 const prog = parseInt(event.target.value);
                 progressDetails.progress = prog;
@@ -318,7 +369,26 @@ function Player({ socket }) {
         </div>
       </div>
 
-      <div className={styles.right}></div>
+      <div className={styles.right}>
+        <p className={styles.title}>{roomDetails.name}</p>
+
+        <div className={styles.btns}>
+          <Button
+            className={`${styles.moreBtn} ${styles.btn}`}
+            outlineButton
+            onClick={() => setShowMoreDetailsModal(true)}
+          >
+            More details
+          </Button>
+          <Button
+            className={styles.btn}
+            outlineButton
+            onClick={handleLeaveRoomClick}
+          >
+            <LogOut />{" "}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

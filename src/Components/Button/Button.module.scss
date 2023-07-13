@@ -152,9 +152,9 @@
   color: $red;
 }
 
-@media (max-width: 768px) {
+@media (max-width: $breakpoint-md) {
   .button {
-    height: 35px;
+    height: 33px;
     font-size: 0.875rem;
   }
 }

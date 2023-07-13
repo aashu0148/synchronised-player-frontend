@@ -177,3 +177,33 @@ export const compareTwoObjects = (obj1, obj2) => {
 
   return true;
 };
+
+export const getDateFormatted = (val, short = false, excludeYear = false) => {
+  if (!val) return "";
+  const date = new Date(val);
+  var day = date.toLocaleString("en-in", { day: "numeric" });
+  var month = date.toLocaleString("en-in", {
+    month: short ? "short" : "long",
+  });
+  var year = date.toLocaleString("en-in", { year: "numeric" });
+
+  if (excludeYear) return `${day} ${month}`;
+  else return `${day} ${month}, ${year}`;
+};
+
+export function getTimeFormatted(value, includeSeconds = false) {
+  if (!value) return;
+
+  const date = new Date(value);
+  let hours = date?.getHours();
+  let minutes = date?.getMinutes();
+  let seconds = date?.getSeconds();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  const strTime =
+    hours + ":" + minutes + includeSeconds ? `:${seconds}` : " " + ampm;
+
+  return strTime;
+}
