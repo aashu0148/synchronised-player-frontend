@@ -203,7 +203,7 @@ export function getTimeFormatted(value, includeSeconds = false) {
   hours = hours ? hours : 12;
   minutes = minutes < 10 ? "0" + minutes : minutes;
   const strTime =
-    hours + ":" + minutes + includeSeconds ? `:${seconds}` : " " + ampm;
+    hours + ":" + minutes + (includeSeconds ? `:${seconds} ` : " ") + ampm;
 
   return strTime;
 }
