@@ -97,12 +97,16 @@ function PlayerDetailsModal({
                               : ""
                           }`}
                           key={item._id}
-                          {...provided.dragHandleProps}
                           {...provided.draggableProps}
                           ref={provided.innerRef}
                         >
                           <div className={styles.left}>
-                            <div className={styles.drag}>{dragIcon}</div>
+                            <div
+                              className={styles.drag}
+                              {...provided.dragHandleProps}
+                            >
+                              {dragIcon}
+                            </div>
 
                             <div
                               className={styles.play}
