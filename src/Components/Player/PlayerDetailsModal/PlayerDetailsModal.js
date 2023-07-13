@@ -158,7 +158,7 @@ function PlayerDetailsModal({
         </Droppable>
       </DragDropContext>
     ),
-    [playlist]
+    [playlist, roomDetails.currentSong]
   );
 
   const usersDiv = (
