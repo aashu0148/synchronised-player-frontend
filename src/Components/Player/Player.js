@@ -17,6 +17,7 @@ import {
 } from "utils/svgs";
 
 import styles from "./Player.module.scss";
+import { getAllSongs } from "apis/song";
 
 let DB = new Dexie("sleeping-owl-music");
 DB.version(1).stores({
@@ -40,6 +41,7 @@ function Player({ socket }) {
   const userDetails = useSelector((state) => state.root.user);
   const isMobileView = useSelector((state) => state.root.mobileView);
 
+  const [availableSongs, setAvailableSongs] = useState([]);
   const [inputElemProgress, setInputElemProgress] = useState(0);
   const [audioElemCurrTime, setAudioElemCurrTime] = useState(0);
   const [isBuffering, setIsBuffering] = useState(false);
@@ -76,6 +78,7 @@ function Player({ socket }) {
       audio.currentTime = seekedTo;
     }
 
+    console.log("🟡seek event emitted");
     socket.emit("seek", {
       seekSeconds: seekedTo,
       roomId: progressDetails.roomId,
@@ -86,13 +89,71 @@ function Player({ socket }) {
   const handlePlayPauseToggle = () => {
     if (isBuffering) return;
 
+    console.log("🟡play-pause event emitted");
     socket.emit("play-pause", {
       roomId: roomDetails._id,
       userId: userDetails._id,
     });
+    setIsBuffering(true);
+  };
+
+  const handlePlayNewSong = (songId) => {
+    if (!songId) return;
+
+    console.log("🟡play-song event emitted");
+    socket.emit("play-song", {
+      roomId: roomDetails._id,
+      userId: userDetails._id,
+      songId,
+    });
+    setIsBuffering(true);
+  };
+
+  const handleAddSong = (songId) => {
+    if (!songId) return;
+    const song = availableSongs.find((item) => item._id == songId);
+    if (!song) return;
+
+    console.log("🟡add-song event emitted");
+    socket.emit("add-song", {
+      roomId: roomDetails._id,
+      userId: userDetails._id,
+      song,
+    });
+  };
+
+  const handleDeleteSong = (songId) => {
+    if (!songId) return;
+    const newSongIds = roomDetails.playlist
+      .filter((item) => item._id !== songId)
+      .map((item) => item._id);
+
+    if (songId == currentSong._id) {
+      // pauseAudio(audioElemRef.current);
+      audioElemRef.current.src = "";
+    }
+
+    console.log("🟡update-playlist event emitted for deleting song");
+    socket.emit("update-playlist", {
+      roomId: roomDetails._id,
+      userId: userDetails._id,
+      songIds: newSongIds,
+    });
+  };
+
+  const handleReorderPlaylist = (songIds) => {
+    if (!Array.isArray(songIds) || typeof songIds[0] !== "string") return;
+
+    console.log("🟡update-playlist event emitted for reordering");
+    socket.emit("update-playlist", {
+      roomId: roomDetails._id,
+      userId: userDetails._id,
+      songIds: songIds,
+    });
   };
 
   const handlePreviousClick = () => {
+    console.log("🟡prev event emitted");
     socket.emit("prev", {
       roomId: roomDetails._id,
       userId: userDetails._id,
@@ -101,6 +162,7 @@ function Player({ socket }) {
   };
 
   const handleNextClick = () => {
+    console.log("🟡next event emitted");
     socket.emit("next", {
       roomId: roomDetails._id,
       userId: userDetails._id,
@@ -136,17 +198,31 @@ function Player({ socket }) {
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
     });
 
+    socket.on("play-song", (data) => {
+      if (!data.currentSong) return;
+
+      dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
+    });
+
+    socket.on("add-song", (data) => {
+      if (!data.playlist?.length) return;
+
+      dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
+      toast.success(`New song added`);
+    });
+
+    socket.on("update-playlist", (data) => {
+      if (!data.playlist?.length) return;
+
+      dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
+      toast.success(`Playlist updated`);
+    });
+
     socket.on("notification", (msg) => {
       setRoomNotifications((prev) => [
         ...prev,
         typeof msg == "object" ? { ...msg, timestamp: Date.now() } : {},
       ]);
-    });
-
-    socket.on("left-room", () => {
-      if (audioElemRef.current) audioElemRef.current?.pause();
-
-      dispatch({ type: actionTypes.DELETE_ROOM });
     });
 
     socket.on("users-change", (data) => {
@@ -156,6 +232,20 @@ function Player({ socket }) {
         type: actionTypes.UPDATE_ROOM,
         room: { users: data.users },
       });
+    });
+
+    socket.on("left-room", () => {
+      if (audioElemRef.current) audioElemRef.current?.pause();
+
+      dispatch({ type: actionTypes.DELETE_ROOM });
+    });
+
+    socket.on("joined-room", (data) => {
+      if (!Object.keys(data)?.length) return;
+
+      setRoomNotifications([]);
+      dispatch({ type: actionTypes.ADD_ROOM, room: data });
+      console.log("🟢 Room joined", data.name);
     });
   };
 
@@ -243,9 +333,17 @@ function Player({ socket }) {
 
   const checkForBuffering = () => {
     const audio = audioElemRef.current;
+    if (!audio) return;
 
     if (globalBufferingVariable && audio.readyState >= 1)
       playAudio(audio, false);
+  };
+
+  const fetchAllSongs = async () => {
+    const res = await getAllSongs();
+    if (!res) return;
+
+    setAvailableSongs(res.data);
   };
 
   const readFileAsUrl = async (file) => {
@@ -323,6 +421,10 @@ function Player({ socket }) {
     }
   };
 
+  const cleanIndexDBIfNeeded = () => {
+    // TODO -> clear out some storage if taking too much of the space
+  };
+
   useEffect(() => {
     if (isFirstRender) return;
 
@@ -336,6 +438,8 @@ function Player({ socket }) {
   useEffect(() => {
     setIsFirstRender(false);
     handleSocketEvents();
+    fetchAllSongs();
+    cleanIndexDBIfNeeded();
 
     if (bufferCheckingInterval) {
       clearInterval(bufferCheckingInterval);
@@ -368,6 +472,12 @@ function Player({ socket }) {
         <PlayerDetailsModal
           onClose={() => setShowMoreDetailsModal(false)}
           notifications={roomNotifications}
+          onToggleCurrentSong={handlePlayPauseToggle}
+          onPlayNewSong={handlePlayNewSong}
+          onDeleteSong={handleDeleteSong}
+          allSongs={availableSongs}
+          onAddNewSong={handleAddSong}
+          onReorderPlaylist={handleReorderPlaylist}
         />
       )}
       <div className={styles.inactiveOverlay} />

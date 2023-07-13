@@ -1,15 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Headphones, X } from "react-feather";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
 import Modal from "Components/Modal/Modal";
+import InputSelect from "Components/InputControl/InputSelect/InputSelect";
 
 import { dragIcon, pauseIcon, playIcon } from "utils/svgs";
 import { getTimeFormatted } from "utils/util";
 
 import styles from "./PlayerDetailsModal.module.scss";
 
-function PlayerDetailsModal({ onClose, notifications = [] }) {
+function PlayerDetailsModal({
+  onClose,
+  notifications = [],
+  allSongs = [],
+  onToggleCurrentSong,
+  onPlayNewSong,
+  onDeleteSong,
+  onAddNewSong,
+  onReorderPlaylist,
+}) {
   const tabsEnum = {
     playlist: "playlist",
     users: "users",
@@ -18,8 +29,26 @@ function PlayerDetailsModal({ onClose, notifications = [] }) {
   const roomDetails = useSelector((state) => state.root.room);
 
   const [activeTab, setActiveTab] = useState(tabsEnum.playlist);
+  const [playlist, setPlaylist] = useState(roomDetails.playlist || []);
 
-  // console.log(roomDetails);
+  const handleDragEnd = (dragObj) => {
+    const si = dragObj.source?.index;
+    const di = dragObj.destination?.index;
+    if (isNaN(di) || isNaN(si)) return;
+
+    const tempPlaylist = [...playlist];
+    const sElement = tempPlaylist[si];
+    tempPlaylist.splice(si, 1);
+    tempPlaylist.splice(di, 0, sElement);
+
+    setPlaylist(tempPlaylist);
+    if (onReorderPlaylist)
+      onReorderPlaylist(tempPlaylist.map((item) => item._id));
+  };
+
+  useEffect(() => {
+    setPlaylist(roomDetails.playlist);
+  }, [roomDetails.playlist]);
 
   const musicBar = (
     <div className={styles.musicBar}>
@@ -29,49 +58,103 @@ function PlayerDetailsModal({ onClose, notifications = [] }) {
     </div>
   );
 
-  const playlistDiv = (
-    <div className={styles.playlist}>
-      {Array.isArray(roomDetails.playlist)
-        ? roomDetails.playlist.map((item) => (
+  const playlistDiv = useMemo(
+    () => (
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="playlist-droppable">
+          {(provided) => (
             <div
-              key={item._id}
-              className={`${styles.song} ${
-                roomDetails.currentSong == item._id ? styles.playing : ""
-              }`}
+              className={styles.playlist}
+              {...provided.droppableProps}
+              ref={provided.innerRef}
             >
-              <div className={styles.left}>
-                <div className={styles.drag}>{dragIcon}</div>
+              <InputSelect
+                label="Add new song"
+                placeholder="Select song"
+                value=""
+                options={allSongs
+                  .filter(
+                    (item) =>
+                      !roomDetails.playlist.some((s) => s._id == item._id)
+                  )
+                  .map((item) => ({
+                    value: item._id,
+                    label: item.title,
+                  }))}
+                onChange={(song) =>
+                  onAddNewSong ? onAddNewSong(song.value) : ""
+                }
+              />
 
-                <div className={styles.play}>
-                  {roomDetails.currentSong == item._id
-                    ? roomDetails.paused
-                      ? playIcon
-                      : pauseIcon
-                    : playIcon}
-                </div>
+              {Array.isArray(roomDetails.playlist)
+                ? playlist.map((item, i) => (
+                    <Draggable key={item._id} index={i} draggableId={item._id}>
+                      {(provided) => (
+                        <div
+                          className={`${styles.song} ${
+                            roomDetails.currentSong == item._id
+                              ? styles.playing
+                              : ""
+                          }`}
+                          key={item._id}
+                          {...provided.dragHandleProps}
+                          {...provided.draggableProps}
+                          ref={provided.innerRef}
+                        >
+                          <div className={styles.left}>
+                            <div className={styles.drag}>{dragIcon}</div>
 
-                <div className={styles.details}>
-                  <p className={styles.title}>
-                    <span>
-                      {roomDetails.currentSong == item._id ? (
-                        musicBar
-                      ) : (
-                        <Headphones />
+                            <div
+                              className={styles.play}
+                              onClick={() =>
+                                onToggleCurrentSong && onPlayNewSong
+                                  ? roomDetails.currentSong == item._id
+                                    ? onToggleCurrentSong()
+                                    : onPlayNewSong(item._id)
+                                  : ""
+                              }
+                            >
+                              {roomDetails.currentSong == item._id
+                                ? roomDetails.paused
+                                  ? playIcon
+                                  : pauseIcon
+                                : playIcon}
+                            </div>
+
+                            <div className={styles.details}>
+                              <p className={styles.title}>
+                                <span>
+                                  {roomDetails.currentSong == item._id ? (
+                                    musicBar
+                                  ) : (
+                                    <Headphones />
+                                  )}
+                                </span>
+                                {item.title}
+                              </p>
+
+                              <p className={styles.desc}>{item.artist}</p>
+                            </div>
+                          </div>
+                          <div
+                            className={`icon ${styles.deleteIcon}`}
+                            onClick={() =>
+                              onDeleteSong ? onDeleteSong(item._id) : ""
+                            }
+                          >
+                            <X />
+                          </div>
+                        </div>
                       )}
-                    </span>
-                    {item.title}
-                  </p>
-
-                  <p className={styles.desc}>{item.artist}</p>
-                </div>
-              </div>
-              <div className={`icon ${styles.deleteIcon}`}>
-                <X />
-              </div>
+                    </Draggable>
+                  ))
+                : ""}
             </div>
-          ))
-        : ""}
-    </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+    ),
+    [playlist]
   );
 
   const usersDiv = (

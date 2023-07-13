@@ -68,13 +68,6 @@ function App() {
       console.log("⚠️ Socket Error", msg);
       toast.error(msg);
     });
-
-    socket.on("joined-room", (data) => {
-      if (!Object.keys(data)?.length) return;
-
-      dispatch({ type: actionTypes.ADD_ROOM, room: data });
-      console.log("🟢 Room joined", data);
-    });
   };
 
   useEffect(() => {
