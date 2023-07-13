@@ -19,6 +19,18 @@ import {
 import styles from "./Player.module.scss";
 import { getAllSongs } from "apis/song";
 
+const socketEventEnum = {
+  playPause: "play-pause",
+  updatePlaylist: "update-playlist",
+  seek: "seek",
+  prev: "prev",
+  next: "next",
+  playSong: "play-song",
+  addSong: "add-song",
+  notification: "notification",
+  userChange: "user-change",
+  joinedRoom: "joined-room",
+};
 let DB = new Dexie("sleeping-owl-music");
 DB.version(1).stores({
   audios: "++id,file,hash,url,name,createdAt",
@@ -79,7 +91,7 @@ function Player({ socket }) {
     }
 
     console.log("🟡seek event emitted");
-    socket.emit("seek", {
+    socket.emit(socketEventEnum.seek, {
       seekSeconds: seekedTo,
       roomId: progressDetails.roomId,
       userId: userDetails._id,
@@ -90,18 +102,17 @@ function Player({ socket }) {
     if (isBuffering) return;
 
     console.log("🟡play-pause event emitted");
-    socket.emit("play-pause", {
+    socket.emit(socketEventEnum.playPause, {
       roomId: roomDetails._id,
       userId: userDetails._id,
     });
-    setIsBuffering(true);
   };
 
   const handlePlayNewSong = (songId) => {
     if (!songId) return;
 
     console.log("🟡play-song event emitted");
-    socket.emit("play-song", {
+    socket.emit(socketEventEnum.playSong, {
       roomId: roomDetails._id,
       userId: userDetails._id,
       songId,
@@ -115,7 +126,7 @@ function Player({ socket }) {
     if (!song) return;
 
     console.log("🟡add-song event emitted");
-    socket.emit("add-song", {
+    socket.emit(socketEventEnum.addSong, {
       roomId: roomDetails._id,
       userId: userDetails._id,
       song,
@@ -134,7 +145,7 @@ function Player({ socket }) {
     }
 
     console.log("🟡update-playlist event emitted for deleting song");
-    socket.emit("update-playlist", {
+    socket.emit(socketEventEnum.updatePlaylist, {
       roomId: roomDetails._id,
       userId: userDetails._id,
       songIds: newSongIds,
@@ -145,7 +156,7 @@ function Player({ socket }) {
     if (!Array.isArray(songIds) || typeof songIds[0] !== "string") return;
 
     console.log("🟡update-playlist event emitted for reordering");
-    socket.emit("update-playlist", {
+    socket.emit(socketEventEnum.updatePlaylist, {
       roomId: roomDetails._id,
       userId: userDetails._id,
       songIds: songIds,
@@ -154,7 +165,7 @@ function Player({ socket }) {
 
   const handlePreviousClick = () => {
     console.log("🟡prev event emitted");
-    socket.emit("prev", {
+    socket.emit(socketEventEnum.prev, {
       roomId: roomDetails._id,
       userId: userDetails._id,
       currentSongId: roomDetails.currentSong,
@@ -163,7 +174,7 @@ function Player({ socket }) {
 
   const handleNextClick = () => {
     console.log("🟡next event emitted");
-    socket.emit("next", {
+    socket.emit(socketEventEnum.next, {
       roomId: roomDetails._id,
       userId: userDetails._id,
       currentSongId: roomDetails.currentSong,
@@ -178,54 +189,54 @@ function Player({ socket }) {
   };
 
   const handleSocketEvents = () => {
-    socket.on("seek", (data) => {
+    socket.on(socketEventEnum.seek, (data) => {
       if (isNaN(data?.secondsPlayed)) return;
 
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
     });
 
-    socket.on("play-pause", (data) => {
+    socket.on(socketEventEnum.playPause, (data) => {
       if (!data) return;
 
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
     });
 
-    socket.on("prev", (data) => {
+    socket.on(socketEventEnum.prev, (data) => {
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
     });
 
-    socket.on("next", (data) => {
+    socket.on(socketEventEnum.next, (data) => {
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
     });
 
-    socket.on("play-song", (data) => {
+    socket.on(socketEventEnum.playSong, (data) => {
       if (!data.currentSong) return;
 
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
     });
 
-    socket.on("add-song", (data) => {
+    socket.on(socketEventEnum.addSong, (data) => {
       if (!data.playlist?.length) return;
 
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
       toast.success(`New song added`);
     });
 
-    socket.on("update-playlist", (data) => {
+    socket.on(socketEventEnum.updatePlaylist, (data) => {
       if (!data.playlist?.length) return;
 
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
       toast.success(`Playlist updated`);
     });
 
-    socket.on("notification", (msg) => {
+    socket.on(socketEventEnum.notification, (msg) => {
       setRoomNotifications((prev) => [
         ...prev,
         typeof msg == "object" ? { ...msg, timestamp: Date.now() } : {},
       ]);
     });
 
-    socket.on("users-change", (data) => {
+    socket.on(socketEventEnum.userChange, (data) => {
       if (!data?._id) return;
 
       dispatch({
@@ -240,7 +251,7 @@ function Player({ socket }) {
       dispatch({ type: actionTypes.DELETE_ROOM });
     });
 
-    socket.on("joined-room", (data) => {
+    socket.on(socketEventEnum.joinedRoom, (data) => {
       if (!Object.keys(data)?.length) return;
 
       setRoomNotifications([]);
@@ -437,7 +448,6 @@ function Player({ socket }) {
 
   useEffect(() => {
     setIsFirstRender(false);
-    handleSocketEvents();
     fetchAllSongs();
     cleanIndexDBIfNeeded();
 
@@ -457,6 +467,18 @@ function Player({ socket }) {
       document.removeEventListener("touchend", handleMouseUp);
     };
   }, []);
+
+  useEffect(() => {
+    handleSocketEvents();
+
+    return () => {
+      try {
+        Object.values(socketEventEnum).forEach((e) => socket.off(e));
+      } catch (err) {
+        console.log("error removing socket events", err);
+      }
+    };
+  }, [socket]);
 
   const dotLoadingDiv = (
     <div className={styles.dotLoading}>
@@ -513,6 +535,8 @@ function Player({ socket }) {
         onCanPlay={handleCanPlayEvent}
         onCanPlayThrough={handleCanPlayEvent}
         onLoadedMetadata={(e) => handleCanPlayEvent(e, true)}
+        // onPause={() => console.log("ON PAUSE")}
+        // onPlay={() => console.log("ON PLAY")}
       />
 
       <div className={styles.left}>
