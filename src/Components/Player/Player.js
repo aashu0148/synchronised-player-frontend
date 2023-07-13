@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ChevronUp, Headphones, LogOut, Pause, Play } from "react-feather";
 import { toast } from "react-hot-toast";
+import Dexie from "dexie";
 
 import Button from "Components/Button/Button";
 import PlayerDetailsModal from "./PlayerDetailsModal/PlayerDetailsModal";
 
-import { formatSecondsToMinutesSeconds } from "utils/util";
+import { formatSecondsToMinutesSeconds, getFileHashSha256 } from "utils/util";
 import actionTypes from "store/actionTypes";
 import {
   nextPlayIcon,
@@ -16,6 +17,11 @@ import {
 } from "utils/svgs";
 
 import styles from "./Player.module.scss";
+
+let DB = new Dexie("sleeping-owl-music");
+DB.version(1).stores({
+  audios: "++id,file,hash,url,name,createdAt",
+});
 
 let debounceTimeout,
   bufferCheckingInterval,
@@ -193,7 +199,7 @@ function Player({ socket }) {
     }, 200);
   };
 
-  const updateAudioElementWithControls = (room) => {
+  const updateAudioElementWithControls = async (room) => {
     if (!Object.keys(room).length) return;
     if (!currentSong?.url) {
       toast.error("current song url not found!");
@@ -202,11 +208,24 @@ function Player({ socket }) {
 
     const audio = audioElemRef.current;
 
-    if (audio.src !== currentSong?.url) {
+    if (audio.dataset.hash !== currentSong?.hash) {
+      const fileRes = await getAudioFromIndexDB(currentSong.hash);
+      if (fileRes && fileRes?.file) {
+        audio.src = fileRes.file;
+        audio.dataset.hash = fileRes.hash;
+        audio.load();
+        setIsBuffering(true);
+        clearTimeout(debounceTimeout);
+        return;
+      }
+
+      audio.dataset.hash = currentSong.hash;
       audio.src = currentSong.url;
       audio.load();
       setIsBuffering(true);
       clearTimeout(debounceTimeout);
+
+      getAudioFileFromUrlAndStore(currentSong.url, currentSong.title);
     } else {
       if (room.paused) pauseAudio(audio);
       else playAudio(audio);
@@ -227,6 +246,81 @@ function Player({ socket }) {
 
     if (globalBufferingVariable && audio.readyState >= 1)
       playAudio(audio, false);
+  };
+
+  const readFileAsUrl = async (file) => {
+    const reader = new FileReader();
+
+    return new Promise((res) => {
+      reader.onload = function (e) {
+        res(e.target.result);
+      };
+
+      reader.onerror = () => res(null);
+
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const getAudioFileFromUrlAndStore = async (url, name) => {
+    try {
+      const res = await fetch(url);
+      if (res.status !== 200 || !res.ok) return;
+
+      const blob = await res.blob();
+      const hash = await getFileHashSha256(blob);
+
+      if (!blob || !hash) return;
+
+      addAudioToIndexDB(blob, hash, url, name);
+    } catch (err) {
+      console.log("Error getting file from URL:", url, err);
+    }
+  };
+
+  const addAudioToIndexDB = async (file, hash, url, name) => {
+    try {
+      const fileInDbRes = await DB.audios
+        .where("hash")
+        .equalsIgnoreCase(hash)
+        .toArray();
+
+      const fileInDb = fileInDbRes[0];
+      if (fileInDb) return;
+
+      const fileAsUrl = await readFileAsUrl(file);
+
+      await DB.audios.add({
+        url: url,
+        hash: hash,
+        file: fileAsUrl,
+        name,
+        createdAt: Date.now(),
+      });
+
+      console.log(`🟢ADDED ${name} to db`);
+      return true;
+    } catch (e) {
+      console.log(`🔴Error accessing file: ${e}`);
+    }
+  };
+
+  const getAudioFromIndexDB = async (hash) => {
+    if (!hash) return null;
+
+    try {
+      const files = await DB.audios
+        .where("hash")
+        .equalsIgnoreCase(hash)
+        .toArray();
+
+      const file = files[0];
+
+      return file;
+    } catch (e) {
+      console.log(`🔴Error accessing file: ${e}`);
+      return null;
+    }
   };
 
   useEffect(() => {
@@ -279,11 +373,19 @@ function Player({ socket }) {
       <div className={styles.inactiveOverlay} />
 
       {isMobileView && (
-        <div
-          className={styles.expandButton}
-          onClick={() => setShowMoreDetailsModal(true)}
-        >
-          <ChevronUp />
+        <div className={styles.topBar}>
+          <div
+            className={styles.expandButton}
+            onClick={() => setShowMoreDetailsModal(true)}
+          >
+            <ChevronUp />
+          </div>
+
+          <p className={styles.name}>{currentSong.title}</p>
+
+          <div className={styles.logoutButton} onClick={handleLeaveRoomClick}>
+            <LogOut />
+          </div>
         </div>
       )}
 

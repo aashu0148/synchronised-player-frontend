@@ -108,7 +108,9 @@ function PlayerDetailsModal({ onClose, notifications = [] }) {
           <div className={styles.activity} key={item.title + i}>
             <div className={styles.top}>
               <p className={styles.title}>{item.title}</p>
-              <p className={styles.time}>{getTimeFormatted(item.timestamp)}</p>
+              <p className={styles.time}>
+                {getTimeFormatted(item.timestamp, true)}
+              </p>
             </div>
             <p className={styles.desc}>{item.description}</p>
           </div>
