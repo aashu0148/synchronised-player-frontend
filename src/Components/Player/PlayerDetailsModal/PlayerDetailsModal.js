@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Headphones, X } from "react-feather";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+// import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
 import Modal from "Components/Modal/Modal";
 import InputSelect from "Components/InputControl/InputSelect/InputSelect";
@@ -58,105 +58,180 @@ function PlayerDetailsModal({
     </div>
   );
 
+  // const playlistDiv_old = useMemo(
+  //   () => (
+  //     <DragDropContext onDragEnd={handleDragEnd}>
+  //       <Droppable droppableId="playlist-droppable">
+  //         {(provided) => (
+  //           <div
+  //             className={styles.playlist}
+  //             {...provided.droppableProps}
+  //             ref={provided.innerRef}
+  //           >
+  //             <InputSelect
+  //               label="Add new song"
+  //               placeholder="Select song"
+  //               value=""
+  //               options={allSongs
+  //                 .filter(
+  //                   (item) =>
+  //                     !roomDetails.playlist.some((s) => s._id == item._id)
+  //                 )
+  //                 .map((item) => ({
+  //                   value: item._id,
+  //                   label: item.title,
+  //                 }))}
+  //               onChange={(song) =>
+  //                 onAddNewSong ? onAddNewSong(song.value) : ""
+  //               }
+  //             />
+
+  //             {Array.isArray(roomDetails.playlist)
+  //               ? playlist.map((item, i) => (
+  //                   <Draggable key={item._id} index={i} draggableId={item._id}>
+  //                     {(provided) => (
+  //                       <div
+  //                         className={`${styles.song} ${
+  //                           roomDetails.currentSong == item._id
+  //                             ? styles.playing
+  //                             : ""
+  //                         }`}
+  //                         key={item._id}
+  //                         {...provided.draggableProps}
+  //                         ref={provided.innerRef}
+  //                       >
+  //                         <div className={styles.left}>
+  //                           <div
+  //                             className={styles.drag}
+  //                             {...provided.dragHandleProps}
+  //                           >
+  //                             {dragIcon}
+  //                           </div>
+
+  //                           <div
+  //                             className={styles.play}
+  //                             onClick={() =>
+  //                               onToggleCurrentSong && onPlayNewSong
+  //                                 ? roomDetails.currentSong == item._id
+  //                                   ? onToggleCurrentSong()
+  //                                   : onPlayNewSong(item._id)
+  //                                 : ""
+  //                             }
+  //                           >
+  //                             {roomDetails.currentSong == item._id
+  //                               ? roomDetails.paused
+  //                                 ? playIcon
+  //                                 : pauseIcon
+  //                               : playIcon}
+  //                           </div>
+
+  //                           <div className={styles.details}>
+  //                             <p className={styles.title}>
+  //                               <span>
+  //                                 {roomDetails.currentSong == item._id ? (
+  //                                   musicBar
+  //                                 ) : (
+  //                                   <Headphones />
+  //                                 )}
+  //                               </span>
+  //                               {item.title}
+  //                             </p>
+
+  //                             <p className={styles.desc}>{item.artist}</p>
+  //                           </div>
+  //                         </div>
+  //                         <div
+  //                           className={`icon ${styles.deleteIcon}`}
+  //                           onClick={() =>
+  //                             onDeleteSong ? onDeleteSong(item._id) : ""
+  //                           }
+  //                         >
+  //                           <X />
+  //                         </div>
+  //                       </div>
+  //                     )}
+  //                   </Draggable>
+  //                 ))
+  //               : ""}
+  //           </div>
+  //         )}
+  //       </Droppable>
+  //     </DragDropContext>
+  //   ),
+  //   [playlist, roomDetails.currentSong]
+  // );
+
   const playlistDiv = useMemo(
     () => (
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="playlist-droppable">
-          {(provided) => (
-            <div
-              className={styles.playlist}
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-            >
-              <InputSelect
-                label="Add new song"
-                placeholder="Select song"
-                value=""
-                options={allSongs
-                  .filter(
-                    (item) =>
-                      !roomDetails.playlist.some((s) => s._id == item._id)
-                  )
-                  .map((item) => ({
-                    value: item._id,
-                    label: item.title,
-                  }))}
-                onChange={(song) =>
-                  onAddNewSong ? onAddNewSong(song.value) : ""
-                }
-              />
+      <div className={styles.playlist}>
+        <InputSelect
+          label="Add new song"
+          placeholder="Select song"
+          value=""
+          options={allSongs
+            .filter(
+              (item) => !roomDetails.playlist.some((s) => s._id == item._id)
+            )
+            .map((item) => ({
+              value: item._id,
+              label: item.title,
+            }))}
+          onChange={(song) => (onAddNewSong ? onAddNewSong(song.value) : "")}
+        />
 
-              {Array.isArray(roomDetails.playlist)
-                ? playlist.map((item, i) => (
-                    <Draggable key={item._id} index={i} draggableId={item._id}>
-                      {(provided) => (
-                        <div
-                          className={`${styles.song} ${
-                            roomDetails.currentSong == item._id
-                              ? styles.playing
-                              : ""
-                          }`}
-                          key={item._id}
-                          {...provided.draggableProps}
-                          ref={provided.innerRef}
-                        >
-                          <div className={styles.left}>
-                            <div
-                              className={styles.drag}
-                              {...provided.dragHandleProps}
-                            >
-                              {dragIcon}
-                            </div>
+        {Array.isArray(roomDetails.playlist)
+          ? playlist.map((item, i) => (
+              <div
+                className={`${styles.song} ${
+                  roomDetails.currentSong == item._id ? styles.playing : ""
+                }`}
+                key={item._id}
+              >
+                <div className={styles.left}>
+                  <div className={styles.drag}>{dragIcon}</div>
 
-                            <div
-                              className={styles.play}
-                              onClick={() =>
-                                onToggleCurrentSong && onPlayNewSong
-                                  ? roomDetails.currentSong == item._id
-                                    ? onToggleCurrentSong()
-                                    : onPlayNewSong(item._id)
-                                  : ""
-                              }
-                            >
-                              {roomDetails.currentSong == item._id
-                                ? roomDetails.paused
-                                  ? playIcon
-                                  : pauseIcon
-                                : playIcon}
-                            </div>
+                  <div
+                    className={styles.play}
+                    onClick={() =>
+                      onToggleCurrentSong && onPlayNewSong
+                        ? roomDetails.currentSong == item._id
+                          ? onToggleCurrentSong()
+                          : onPlayNewSong(item._id)
+                        : ""
+                    }
+                  >
+                    {roomDetails.currentSong == item._id
+                      ? roomDetails.paused
+                        ? playIcon
+                        : pauseIcon
+                      : playIcon}
+                  </div>
 
-                            <div className={styles.details}>
-                              <p className={styles.title}>
-                                <span>
-                                  {roomDetails.currentSong == item._id ? (
-                                    musicBar
-                                  ) : (
-                                    <Headphones />
-                                  )}
-                                </span>
-                                {item.title}
-                              </p>
+                  <div className={styles.details}>
+                    <p className={styles.title}>
+                      <span>
+                        {roomDetails.currentSong == item._id ? (
+                          musicBar
+                        ) : (
+                          <Headphones />
+                        )}
+                      </span>
+                      {item.title}
+                    </p>
 
-                              <p className={styles.desc}>{item.artist}</p>
-                            </div>
-                          </div>
-                          <div
-                            className={`icon ${styles.deleteIcon}`}
-                            onClick={() =>
-                              onDeleteSong ? onDeleteSong(item._id) : ""
-                            }
-                          >
-                            <X />
-                          </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))
-                : ""}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+                    <p className={styles.desc}>{item.artist}</p>
+                  </div>
+                </div>
+                <div
+                  className={`icon ${styles.deleteIcon}`}
+                  onClick={() => (onDeleteSong ? onDeleteSong(item._id) : "")}
+                >
+                  <X />
+                </div>
+              </div>
+            ))
+          : ""}
+      </div>
     ),
     [playlist, roomDetails.currentSong]
   );

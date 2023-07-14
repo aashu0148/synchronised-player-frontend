@@ -31,10 +31,10 @@ const socketEventEnum = {
   userChange: "user-change",
   joinedRoom: "joined-room",
 };
-// let DB = new Dexie("sleeping-owl-music");
-// DB.version(1).stores({
-//   audios: "++id,file,hash,url,name,createdAt",
-// });
+let DB = new Dexie("sleeping-owl-music");
+DB.version(1).stores({
+  audios: "++id,file,hash,url,name,createdAt",
+});
 
 let debounceTimeout,
   bufferCheckingInterval,
@@ -310,15 +310,15 @@ function Player({ socket }) {
     const audio = audioElemRef.current;
 
     if (audio.dataset.hash !== currentSong?.hash) {
-      // const fileRes = await getAudioFromIndexDB(currentSong.hash);
-      // if (fileRes && fileRes?.file) {
-      //   audio.src = fileRes.file;
-      //   audio.dataset.hash = fileRes.hash;
-      //   audio.load();
-      //   setIsBuffering(true);
-      //   clearTimeout(debounceTimeout);
-      //   return;
-      // }
+      const fileRes = await getAudioFromIndexDB(currentSong.hash);
+      if (fileRes && fileRes?.file) {
+        audio.src = fileRes.file;
+        audio.dataset.hash = fileRes.hash;
+        audio.load();
+        setIsBuffering(true);
+        clearTimeout(debounceTimeout);
+        return;
+      }
 
       audio.dataset.hash = currentSong.hash;
       audio.src = currentSong.url;
@@ -326,7 +326,7 @@ function Player({ socket }) {
       setIsBuffering(true);
       clearTimeout(debounceTimeout);
 
-      // getAudioFileFromUrlAndStore(currentSong.url, currentSong.title);
+      getAudioFileFromUrlAndStore(currentSong.url, currentSong.title);
     } else {
       if (room.paused) pauseAudio(audio);
       else playAudio(audio);
@@ -371,66 +371,66 @@ function Player({ socket }) {
     });
   };
 
-  // const getAudioFileFromUrlAndStore = async (url, name) => {
-  //   try {
-  //     const res = await fetch(url);
-  //     if (res.status !== 200 || !res.ok) return;
+  const getAudioFileFromUrlAndStore = async (url, name) => {
+    try {
+      const res = await fetch(url);
+      if (res.status !== 200 || !res.ok) return;
 
-  //     const blob = await res.blob();
-  //     const hash = await getFileHashSha256(blob);
+      const blob = await res.blob();
+      const hash = await getFileHashSha256(blob);
 
-  //     if (!blob || !hash) return;
+      if (!blob || !hash) return;
 
-  //     addAudioToIndexDB(blob, hash, url, name);
-  //   } catch (err) {
-  //     console.log("Error getting file from URL:", url, err);
-  //   }
-  // };
+      addAudioToIndexDB(blob, hash, url, name);
+    } catch (err) {
+      console.log("Error getting file from URL:", url, err);
+    }
+  };
 
-  // const addAudioToIndexDB = async (file, hash, url, name) => {
-  //   try {
-  //     const fileInDbRes = await DB.audios
-  //       .where("hash")
-  //       .equalsIgnoreCase(hash)
-  //       .toArray();
+  const addAudioToIndexDB = async (file, hash, url, name) => {
+    try {
+      const fileInDbRes = await DB.audios
+        .where("hash")
+        .equalsIgnoreCase(hash)
+        .toArray();
 
-  //     const fileInDb = fileInDbRes[0];
-  //     if (fileInDb) return;
+      const fileInDb = fileInDbRes[0];
+      if (fileInDb) return;
 
-  //     const fileAsUrl = await readFileAsUrl(file);
+      const fileAsUrl = await readFileAsUrl(file);
 
-  //     await DB.audios.add({
-  //       url: url,
-  //       hash: hash,
-  //       file: fileAsUrl,
-  //       name,
-  //       createdAt: Date.now(),
-  //     });
+      await DB.audios.add({
+        url: url,
+        hash: hash,
+        file: fileAsUrl,
+        name,
+        createdAt: Date.now(),
+      });
 
-  //     console.log(`🟢ADDED ${name} to db`);
-  //     return true;
-  //   } catch (e) {
-  //     console.log(`🔴Error accessing file: ${e}`);
-  //   }
-  // };
+      console.log(`🟢ADDED ${name} to db`);
+      return true;
+    } catch (e) {
+      console.log(`🔴Error accessing file: ${e}`);
+    }
+  };
 
-  // const getAudioFromIndexDB = async (hash) => {
-  //   if (!hash) return null;
+  const getAudioFromIndexDB = async (hash) => {
+    if (!hash) return null;
 
-  //   try {
-  //     const files = await DB.audios
-  //       .where("hash")
-  //       .equalsIgnoreCase(hash)
-  //       .toArray();
+    try {
+      const files = await DB.audios
+        .where("hash")
+        .equalsIgnoreCase(hash)
+        .toArray();
 
-  //     const file = files[0];
+      const file = files[0];
 
-  //     return file;
-  //   } catch (e) {
-  //     console.log(`🔴Error accessing file: ${e}`);
-  //     return null;
-  //   }
-  // };
+      return file;
+    } catch (e) {
+      console.log(`🔴Error accessing file: ${e}`);
+      return null;
+    }
+  };
 
   const cleanIndexDBIfNeeded = () => {
     // TODO -> clear out some storage if taking too much of the space
