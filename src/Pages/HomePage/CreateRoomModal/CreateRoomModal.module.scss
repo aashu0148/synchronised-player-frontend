@@ -44,4 +44,12 @@
     align-items: center;
     gap: 20px;
   }
+
+  @media (max-width: $breakpoint-md) {
+    min-height: 500px;
+
+    .footer {
+      margin-top: auto;
+    }
+  }
 }
