@@ -535,8 +535,6 @@ function Player({ socket }) {
         onCanPlay={handleCanPlayEvent}
         onCanPlayThrough={handleCanPlayEvent}
         onLoadedMetadata={(e) => handleCanPlayEvent(e, true)}
-        // onPause={() => console.log("ON PAUSE")}
-        // onPlay={() => console.log("ON PLAY")}
       />
 
       <div className={styles.left}>
