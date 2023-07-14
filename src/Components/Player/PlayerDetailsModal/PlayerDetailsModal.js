@@ -69,7 +69,6 @@ function PlayerDetailsModal({
       if (messagesRef.current) {
         messagesRef.current.scrollTo({
           top: messagesRef.current.scrollHeight,
-          behavior: "smooth",
         });
         if (updateChatUnreadCount) updateChatUnreadCount(0);
       }
