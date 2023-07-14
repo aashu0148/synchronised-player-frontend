@@ -143,6 +143,7 @@
     }
 
     .song {
+      width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -154,9 +155,11 @@
       background-color: $white;
 
       .left {
+        width: 100%;
         display: flex;
         gap: 15px;
         align-items: center;
+        overflow: hidden;
 
         .drag,
         .play {
@@ -184,14 +187,10 @@
           flex-direction: column;
           gap: 2px;
 
-          .title {
-            font-size: 16px;
-            font-weight: 600;
-            // color: $primary;
+          .top {
             display: flex;
             gap: 5px;
             align-items: center;
-            text-transform: capitalize;
 
             span {
               display: flex;
@@ -201,8 +200,16 @@
             svg {
               height: 16px;
               width: 16px;
-              //   color: $primary;
             }
+          }
+
+          .title {
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: capitalize;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
           }
 
           .desc {

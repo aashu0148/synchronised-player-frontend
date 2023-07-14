@@ -31,10 +31,11 @@
     display: flex;
     flex-wrap: wrap;
     gap: 30px;
+    justify-content: space-evenly;
 
     .room {
       align-self: stretch;
-      width: min(100%, 450px);
+      width: clamp(380px, 30%, 480px);
       padding: 15px 25px;
       border-radius: 10px;
       background-color: $white;
@@ -79,6 +80,9 @@
             background-color: $white-1;
             font-size: 16px;
             font-weight: 600;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
           }
         }
       }
@@ -146,6 +150,7 @@
       .room {
         padding: 20px;
         gap: 25px;
+        width: clamp(280px, 410px, 100%);
 
         .title {
           font-size: 18px;

@@ -353,8 +353,11 @@ function Player({ socket }) {
 
     if (audio.dataset.hash !== currentSong?.hash) {
       const fileRes = await getAudioFromIndexDB(currentSong.hash);
-      if (fileRes && fileRes?.file) {
-        audio.src = fileRes.file;
+      const fileAsDataUrl =
+        fileRes && fileRes?.file ? await readFileAsUrl(fileRes.file) : null;
+
+      if (fileAsDataUrl) {
+        audio.src = fileAsDataUrl;
         audio.dataset.hash = fileRes.hash;
         audio.load();
         setIsBuffering(true);
@@ -403,13 +406,19 @@ function Player({ socket }) {
     const reader = new FileReader();
 
     return new Promise((res) => {
-      reader.onload = function (e) {
-        res(e.target.result);
-      };
+      try {
+        reader.onload = function (e) {
+          res(e.target.result);
+        };
 
-      reader.onerror = () => res(null);
+        reader.onerror = () => res(null);
 
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      } catch (err) {
+        console.log("Error reading file as dataURL", err);
+
+        return null;
+      }
     });
   };
 
@@ -439,12 +448,10 @@ function Player({ socket }) {
       const fileInDb = fileInDbRes[0];
       if (fileInDb) return;
 
-      const fileAsUrl = await readFileAsUrl(file);
-
       await DB.audios.add({
         url: url,
         hash: hash,
-        file: fileAsUrl,
+        file,
         name,
         createdAt: Date.now(),
       });
@@ -474,8 +481,44 @@ function Player({ socket }) {
     }
   };
 
-  const cleanIndexDBIfNeeded = () => {
-    // TODO -> clear out some storage if taking too much of the space
+  const cleanIndexDBIfNeeded = async () => {
+    try {
+      const files = await DB.audios.toArray();
+
+      const oldStringsAsFiles = files.filter(
+        (item) => typeof item.file == "string"
+      );
+
+      for (let i = 0; i < oldStringsAsFiles.length; ++i) {
+        const song = oldStringsAsFiles[i];
+
+        console.log(
+          "🗑️ Deleting file stored as string from IndexDB:",
+          song.name
+        );
+        await DB.audios.delete(song.id);
+      }
+
+      const maxSongsAllowedInDb = 120;
+
+      if (files.length < maxSongsAllowedInDb) return;
+
+      // sorting files from newest to oldest
+      files.sort((a, b) =>
+        new Date(a.createdAt) > new Date(b.createdAt) ? -1 : 1
+      );
+      const oldFilesToDelete = files.slice(maxSongsAllowedInDb);
+
+      for (let i = 0; i < oldFilesToDelete.length; ++i) {
+        const song = oldFilesToDelete[i];
+
+        console.log("🗑️ Deleting old file from IndexDB:", song.name);
+        await DB.audios.delete(song.id);
+      }
+    } catch (e) {
+      console.log(`🔴Error clearing indexDB: ${e}`);
+      return null;
+    }
   };
 
   const greetBackend = async () => {

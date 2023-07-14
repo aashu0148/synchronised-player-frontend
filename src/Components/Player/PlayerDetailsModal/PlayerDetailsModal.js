@@ -172,7 +172,7 @@ function PlayerDetailsModal({
                             </div>
 
                             <div className={styles.details}>
-                              <p className={styles.title}>
+                              <div className={styles.top}>
                                 <span>
                                   {roomDetails.currentSong == item._id ? (
                                     musicBar
@@ -180,8 +180,9 @@ function PlayerDetailsModal({
                                     <Headphones />
                                   )}
                                 </span>
-                                {item.title}
-                              </p>
+
+                                <p className={styles.title}>{item.title}</p>
+                              </div>
 
                               <p className={styles.desc}>{item.artist}</p>
                             </div>

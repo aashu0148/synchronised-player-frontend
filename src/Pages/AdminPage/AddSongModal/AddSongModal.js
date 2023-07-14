@@ -42,15 +42,17 @@ function AddSongModal({ onClose, onSuccess }) {
 
   const validateAudioFile = (file) => {
     const { type, size } = file;
+    const maxFileSizeAllowed = 8;
+
     if (!type.includes("audio"))
       return {
         success: false,
         message: "Not a audio file",
       };
-    if (size / 1024 / 1024 > 5)
+    if (size / 1024 / 1024 > maxFileSizeAllowed)
       return {
         success: false,
-        message: `Due to constraints of free servers, right now we only accept files smaller than 5MB, found: ${parseFloat(
+        message: `Due to constraints of free servers, right now we only accept files smaller than ${maxFileSizeAllowed}MB, found: ${parseFloat(
           size / 1024 / 1024
         ).toFixed(2)}MB`,
       };
