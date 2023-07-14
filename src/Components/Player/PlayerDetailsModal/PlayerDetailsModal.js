@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { Headphones, X } from "react-feather";
+import { Headphones, Send, Shuffle, X } from "react-feather";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 
 import Modal from "Components/Modal/Modal";
 import InputSelect from "Components/InputControl/InputSelect/InputSelect";
+import Button from "Components/Button/Button";
 
 import { dragIcon, pauseIcon, playIcon } from "utils/svgs";
 import { getTimeFormatted } from "utils/util";
@@ -20,16 +21,24 @@ function PlayerDetailsModal({
   onDeleteSong,
   onAddNewSong,
   onReorderPlaylist,
+  onShufflePlaylist,
+  onMessageSent,
+  chatUnreadCount = 0,
+  updateChatUnreadCount,
 }) {
+  const messagesRef = useRef();
   const tabsEnum = {
     playlist: "playlist",
     users: "users",
+    chat: "chat",
     activity: "activity",
   };
+  const userDetails = useSelector((state) => state.root.user);
   const roomDetails = useSelector((state) => state.root.room);
 
   const [activeTab, setActiveTab] = useState(tabsEnum.playlist);
   const [playlist, setPlaylist] = useState(roomDetails.playlist || []);
+  const [inputMessage, setInputMessage] = useState("");
 
   const handleDragEnd = (dragObj) => {
     const si = dragObj.source?.index;
@@ -45,6 +54,37 @@ function PlayerDetailsModal({
     if (onReorderPlaylist)
       onReorderPlaylist(tempPlaylist.map((item) => item._id));
   };
+
+  const handleChatSubmission = () => {
+    if (!inputMessage || !inputMessage.trim()) return;
+
+    const msg = inputMessage;
+    setInputMessage("");
+
+    if (onMessageSent) onMessageSent(msg);
+  };
+
+  useEffect(() => {
+    if (activeTab == tabsEnum.chat) {
+      if (messagesRef.current) {
+        messagesRef.current.scrollTo({
+          top: messagesRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+        if (updateChatUnreadCount) updateChatUnreadCount(0);
+      }
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (messagesRef.current) {
+      messagesRef.current.scrollTo({
+        top: messagesRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+      if (updateChatUnreadCount) updateChatUnreadCount(0);
+    }
+  }, [roomDetails.chats?.length]);
 
   useEffect(() => {
     setPlaylist(roomDetails.playlist);
@@ -68,23 +108,30 @@ function PlayerDetailsModal({
               {...provided.droppableProps}
               ref={provided.innerRef}
             >
-              <InputSelect
-                label="Add new song"
-                placeholder="Select song"
-                value=""
-                options={allSongs
-                  .filter(
-                    (item) =>
-                      !roomDetails.playlist.some((s) => s._id == item._id)
-                  )
-                  .map((item) => ({
-                    value: item._id,
-                    label: item.title,
-                  }))}
-                onChange={(song) =>
-                  onAddNewSong ? onAddNewSong(song.value) : ""
-                }
-              />
+              <div className="row" style={{ alignItems: "flex-end" }}>
+                <InputSelect
+                  label="Add new song"
+                  placeholder="Select song"
+                  value=""
+                  options={allSongs
+                    .filter(
+                      (item) =>
+                        !roomDetails.playlist.some((s) => s._id == item._id)
+                    )
+                    .map((item) => ({
+                      value: item._id,
+                      label: item.title,
+                    }))}
+                  onChange={(song) =>
+                    onAddNewSong ? onAddNewSong(song.value) : ""
+                  }
+                />
+
+                <Button className={styles.shuffle} onClick={onShufflePlaylist}>
+                  <Shuffle />
+                  Shuffle
+                </Button>
+              </div>
 
               {Array.isArray(roomDetails.playlist)
                 ? playlist.map((item, i) => (
@@ -263,6 +310,73 @@ function PlayerDetailsModal({
     </div>
   );
 
+  const getMessageDiv = (chat = {}, isRight = false, isConcurrent = false) => {
+    return (
+      <div
+        className={`${styles.message} ${isRight ? styles.rightMessage : ""} ${
+          isConcurrent ? styles.concurrent : ""
+        }`}
+        style={{ marginTop: isConcurrent ? "" : "10px" }}
+      >
+        {!isConcurrent ? (
+          <div className={styles.image}>
+            <img
+              src={chat.user?.profileImage}
+              alt={chat.user?.name}
+              rel="no-referrer"
+            />
+          </div>
+        ) : (
+          <div className={styles.image}>
+            <div className={styles.imagePlaceholder} />
+          </div>
+        )}
+
+        <div className={`${styles.inner}`}>
+          {!isConcurrent && <p className={styles.name}>{chat.user?.name}</p>}
+          <p className={styles.text}>{chat.message}</p>
+        </div>
+      </div>
+    );
+  };
+
+  const chatDiv = useMemo(
+    () => (
+      <div className={styles.chatBox}>
+        <div className={styles.messages} ref={messagesRef}>
+          {Array.isArray(roomDetails.chats) && roomDetails.chats.length ? (
+            roomDetails.chats.map((item, index) =>
+              getMessageDiv(
+                item,
+                item.user?._id == userDetails._id,
+                index > 0 &&
+                  roomDetails.chats[index - 1].user?._id == item.user?._id
+              )
+            )
+          ) : (
+            <p className={styles.empty}>No chats present for now!</p>
+          )}
+        </div>
+        <div className={styles.footer}>
+          <input
+            placeholder="Type something..."
+            value={inputMessage}
+            onChange={(event) => setInputMessage(event.target.value)}
+            onKeyUp={(event) =>
+              event.key == "Enter" && !event.shiftKey
+                ? handleChatSubmission()
+                : ""
+            }
+          />
+          <Button onClick={handleChatSubmission}>
+            <Send />
+          </Button>
+        </div>
+      </div>
+    ),
+    [roomDetails.chats, inputMessage]
+  );
+
   const activityDiv = (
     <div className={styles.activityDiv}>
       {notifications.length ? (
@@ -311,6 +425,12 @@ function PlayerDetailsModal({
               onClick={() => setActiveTab(item)}
             >
               {item}
+
+              {item == tabsEnum.chat && chatUnreadCount > 0 ? (
+                <span className={styles.count}>{chatUnreadCount}</span>
+              ) : (
+                ""
+              )}
             </div>
           ))}
         </div>
@@ -319,6 +439,8 @@ function PlayerDetailsModal({
           ? playlistDiv
           : activeTab == tabsEnum.users
           ? usersDiv
+          : activeTab == tabsEnum.chat
+          ? chatDiv
           : activeTab == tabsEnum.activity
           ? activityDiv
           : ""}

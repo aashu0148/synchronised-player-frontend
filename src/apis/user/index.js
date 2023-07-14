@@ -65,3 +65,17 @@ export const getAdminAccess = async (values) => {
     return false;
   }
 };
+
+export const sayHiToBackend = async () => {
+  const reqPath = "/hi";
+  let response;
+
+  try {
+    response = await fetchWrapper(reqPath);
+    const data = await response.text();
+
+    return data;
+  } catch (err) {
+    return false;
+  }
+};

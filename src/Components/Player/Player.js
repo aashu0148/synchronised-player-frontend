@@ -7,7 +7,11 @@ import Dexie from "dexie";
 import Button from "Components/Button/Button";
 import PlayerDetailsModal from "./PlayerDetailsModal/PlayerDetailsModal";
 
-import { formatSecondsToMinutesSeconds, getFileHashSha256 } from "utils/util";
+import {
+  formatSecondsToMinutesSeconds,
+  getFileHashSha256,
+  shuffleArray,
+} from "utils/util";
 import actionTypes from "store/actionTypes";
 import {
   nextPlayIcon,
@@ -15,9 +19,10 @@ import {
   playIcon,
   previousPlayIcon,
 } from "utils/svgs";
+import { getAllSongs } from "apis/song";
+import { sayHiToBackend } from "apis/user";
 
 import styles from "./Player.module.scss";
-import { getAllSongs } from "apis/song";
 
 const socketEventEnum = {
   playPause: "play-pause",
@@ -28,6 +33,7 @@ const socketEventEnum = {
   playSong: "play-song",
   addSong: "add-song",
   notification: "notification",
+  chat: "chat",
   usersChange: "users-change",
   joinedRoom: "joined-room",
 };
@@ -60,6 +66,7 @@ function Player({ socket }) {
   const [isFirstRender, setIsFirstRender] = useState(true);
   const [showMoreDetailsModal, setShowMoreDetailsModal] = useState(false);
   const [roomNotifications, setRoomNotifications] = useState([]);
+  const [chatUnreadCount, setChatUnreadCount] = useState(0);
 
   const isPlayerActive = roomDetails?._id ? true : false;
   const currentSong =
@@ -181,6 +188,31 @@ function Player({ socket }) {
     });
   };
 
+  const handleSendMessage = (msg) => {
+    setChatUnreadCount(0);
+
+    console.log(`🟡${socketEventEnum.chat} event emitted`);
+    socket.emit(socketEventEnum.chat, {
+      roomId: roomDetails._id,
+      userId: userDetails._id,
+      message: msg,
+      timestamp: Date.now(),
+    });
+  };
+
+  const handleShufflePlaylist = () => {
+    const newSongIds = shuffleArray(roomDetails.playlist).map(
+      (item) => item._id
+    );
+
+    console.log(`🟡${socketEventEnum.updatePlaylist} event emitted to shuffle`);
+    socket.emit(socketEventEnum.updatePlaylist, {
+      roomId: roomDetails._id,
+      userId: userDetails._id,
+      songIds: newSongIds,
+    });
+  };
+
   const handleLeaveRoomClick = () => {
     socket.emit("leave-room", {
       roomId: roomDetails._id,
@@ -234,6 +266,13 @@ function Player({ socket }) {
         ...prev,
         typeof msg == "object" ? { ...msg, timestamp: Date.now() } : {},
       ]);
+    });
+
+    socket.on(socketEventEnum.chat, (data) => {
+      if (!Array.isArray(data?.chats)) return;
+
+      dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
+      setChatUnreadCount((prev) => prev + 1);
     });
 
     socket.on(socketEventEnum.usersChange, (data) => {
@@ -436,6 +475,10 @@ function Player({ socket }) {
     // TODO -> clear out some storage if taking too much of the space
   };
 
+  const greetBackend = async () => {
+    await sayHiToBackend();
+  };
+
   useEffect(() => {
     if (isFirstRender) return;
 
@@ -450,6 +493,8 @@ function Player({ socket }) {
     setIsFirstRender(false);
     fetchAllSongs();
     cleanIndexDBIfNeeded();
+
+    setInterval(greetBackend, 120 * 1000);
 
     if (bufferCheckingInterval) {
       clearInterval(bufferCheckingInterval);
@@ -500,6 +545,10 @@ function Player({ socket }) {
           allSongs={availableSongs}
           onAddNewSong={handleAddSong}
           onReorderPlaylist={handleReorderPlaylist}
+          onShufflePlaylist={handleShufflePlaylist}
+          onMessageSent={handleSendMessage}
+          chatUnreadCount={chatUnreadCount}
+          updateChatUnreadCount={(c) => (isNaN(c) ? "" : setChatUnreadCount(c))}
         />
       )}
       <div className={styles.inactiveOverlay} />
@@ -510,6 +559,10 @@ function Player({ socket }) {
             className={styles.expandButton}
             onClick={() => setShowMoreDetailsModal(true)}
           >
+            {chatUnreadCount > 0 && (
+              <span className={styles.unreadCount}>{chatUnreadCount}</span>
+            )}
+
             <ChevronUp />
           </div>
 
@@ -607,13 +660,19 @@ function Player({ socket }) {
         <p className={styles.title}>{roomDetails.name}</p>
 
         <div className={styles.btns}>
-          <Button
-            className={`${styles.moreBtn} ${styles.btn}`}
-            outlineButton
-            onClick={() => setShowMoreDetailsModal(true)}
-          >
-            More details
-          </Button>
+          <div className={styles.moreButton}>
+            {chatUnreadCount > 0 && (
+              <span className={styles.unreadCount}>{chatUnreadCount}</span>
+            )}
+            <Button
+              className={`${styles.moreBtn} ${styles.btn}`}
+              outlineButton
+              onClick={() => setShowMoreDetailsModal(true)}
+            >
+              More details
+            </Button>
+          </div>
+
           <Button
             className={styles.btn}
             outlineButton
