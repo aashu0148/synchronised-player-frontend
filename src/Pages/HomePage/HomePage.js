@@ -12,6 +12,7 @@ import actionTypes from "store/actionTypes";
 
 import styles from "./HomePage.module.scss";
 import AddSongModal from "Pages/AdminPage/AddSongModal/AddSongModal";
+import DeleteRoomModal from "./DeleteRoomModal/DeleteRoomModal";
 
 const lightColors = [
   "#fff",
@@ -37,7 +38,9 @@ function HomePage({ socket }) {
   const [openModals, setOpenModals] = useState({
     create: false,
     addSong: false,
+    deleteRoom: false,
   });
+  const [selectedRoom, setSelectedRoom] = useState({});
   const [deletingRoom, setDeletingRoom] = useState("");
 
   const handleDeleteRoom = async (rid) => {
@@ -118,6 +121,17 @@ function HomePage({ socket }) {
           onSuccess={handleSongUploaded}
         />
       )}
+      {openModals.deleteRoom && (
+        <DeleteRoomModal
+          details={selectedRoom}
+          onClose={() =>
+            setOpenModals((prev) => ({ ...prev, deleteRoom: false }))
+          }
+          onDelete={() => {
+            handleDeleteRoom(selectedRoom._id);
+          }}
+        />
+      )}
 
       <div className={styles.header}>
         <p className={styles.title}>Available Rooms</p>
@@ -179,35 +193,61 @@ function HomePage({ socket }) {
                   <p className={styles.name}>{item.owner.name}</p>
                 </div>
 
-                <div className={styles.buttons}>
-                  {userDetails._id == item.owner?._id && (
-                    <Button
-                      redButton
-                      onClick={() => handleDeleteRoom(item._id)}
-                      disabled={deletingRoom == item._id}
-                      useSpinnerWhenDisabled
-                    >
-                      Delete room
-                    </Button>
-                  )}
+                <div className={styles.bottom}>
+                  <div className={styles.profiles}>
+                    {item.users?.length && Array.isArray(item.users)
+                      ? item.users.slice(0, 5).map((item, i) => (
+                          <div
+                            key={item._id || item.name}
+                            className={styles.profile}
+                            style={{ left: `${i * 25}px` }}
+                          >
+                            <img
+                              src={item.profileImage}
+                              rel="no-referrer"
+                              alt={item.name}
+                            />
+                          </div>
+                        ))
+                      : ""}
+                  </div>
 
-                  {roomDetails._id == item._id ? (
-                    <Button
-                      // className={styles.greenBtn}
-                      redButton
-                      onClick={() => handleLeaveRoom(item._id)}
-                    >
-                      Leave room ?
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => handleJoinRoom(item._id)}
-                      disabled={joiningRoom == item._id}
-                      useSpinnerWhenDisabled
-                    >
-                      Join room
-                    </Button>
-                  )}
+                  <div className={styles.buttons}>
+                    {userDetails._id == item.owner?._id && (
+                      <Button
+                        redButton
+                        onClick={() => {
+                          setSelectedRoom(item);
+                          setOpenModals((prev) => ({
+                            ...prev,
+                            deleteRoom: true,
+                          }));
+                        }}
+                        disabled={deletingRoom == item._id}
+                        useSpinnerWhenDisabled
+                      >
+                        Delete room
+                      </Button>
+                    )}
+
+                    {roomDetails._id == item._id ? (
+                      <Button
+                        // className={styles.greenBtn}
+                        redButton
+                        onClick={() => handleLeaveRoom(item._id)}
+                      >
+                        Leave room ?
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => handleJoinRoom(item._id)}
+                        disabled={joiningRoom == item._id}
+                        useSpinnerWhenDisabled
+                      >
+                        Join room
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

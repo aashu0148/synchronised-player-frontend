@@ -34,7 +34,7 @@ const Button = ({
     >
       {children}
       {useSpinnerWhenDisabled && disabled ? (
-        <Spinner small />
+        <Spinner small white={redButton} />
       ) : withArrow ? (
         <ArrowRight className={styles.icon} />
       ) : (

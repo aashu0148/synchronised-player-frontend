@@ -22,6 +22,25 @@ export const getAllSongs = async () => {
   }
 };
 
+export const checkSongAvailability = async (values) => {
+  const reqPath = `/song/available`;
+  let response;
+
+  try {
+    response = await fetchWrapper(reqPath, values);
+    const data = await response.json();
+
+    return data;
+  } catch (err) {
+    errorToastLogger(
+      "checkSongAvailability",
+      "Failed req to check song availability",
+      err
+    );
+    return false;
+  }
+};
+
 export const addNewSong = async (values) => {
   const reqPath = `/song`;
   let response;

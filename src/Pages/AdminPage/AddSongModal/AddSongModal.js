@@ -8,11 +8,12 @@ import InputControl from "Components/InputControl/InputControl";
 
 import { uploadAudio } from "utils/firebase";
 import { getFileHashSha256 } from "utils/util";
-import { addNewSong } from "apis/song";
+import { addNewSong, checkSongAvailability } from "apis/song";
 
 import styles from "./AddSongModal.module.scss";
 
-let abortUpload = () => console.log("func not attached");
+let abortUpload = () => console.log("func not attached"),
+  defaultUploadText = "Click to uplaod";
 function AddSongModal({ onClose, onSuccess }) {
   const fileInputRef = useRef();
   const audioElemRef = useRef({});
@@ -39,6 +40,7 @@ function AddSongModal({ onClose, onSuccess }) {
     file: "",
   });
   const [submitButtonDisabled, setSubmitButtonDisabled] = useState(false);
+  const [uploadButtonText, setUploadButtonText] = useState(defaultUploadText);
 
   const validateAudioFile = (file) => {
     const { type, size } = file;
@@ -63,6 +65,27 @@ function AddSongModal({ onClose, onSuccess }) {
     };
   };
 
+  const getAudioLength = async (file) => {
+    const reader = new FileReader();
+
+    return new Promise((res) => {
+      reader.onload = function (e) {
+        audioElemRef.current.src = e.target.result;
+        audioElemRef.current.addEventListener(
+          "loadedmetadata",
+          function () {
+            const duration = parseInt(audioElemRef.current.duration);
+
+            res(duration);
+          },
+          false
+        );
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
   const readAudio = (file) => {
     const reader = new FileReader();
 
@@ -82,7 +105,133 @@ function AddSongModal({ onClose, onSuccess }) {
     reader.readAsDataURL(file);
   };
 
-  const handleFileChange = (event) => {
+  const uploadAudioSync = (file) => {
+    return new Promise((res) => {
+      uploadAudio(
+        file,
+        (p) => console.log(`${parseInt(p)}%`),
+        (url) => res(url),
+        (_err) => res(null)
+      );
+    });
+  };
+
+  const handleBulkFileUpload = async (event) => {
+    const files = event.target.files;
+    console.log(`🔵Total files selected: ${files.length}`);
+
+    const validFiles = Array.from(files).filter(
+      (item) => validateAudioFile(item).success
+    );
+    console.log(`🟡files validated: ${validFiles.length}`);
+
+    const fileWithHashes = [];
+    for (let i = 0; i < validFiles.length; ++i) {
+      console.log(`🟡getting hash for file`);
+
+      const file = validFiles[i];
+      const hash = await getFileHashSha256(file);
+
+      const fileName = file.name;
+      const fileNameArr =
+        fileName.split("_").length > 1
+          ? fileName.split("_")
+          : fileName.split("-");
+
+      const title = fileNameArr[0].trim();
+      const artist = fileNameArr
+        .slice(1)
+        .reduce((acc, curr) => [...acc, ...curr.split(",")], [])
+        .map((item) => item.trim())
+        .join(", ");
+      // .filter((item) =>
+      //   item.includes(".") ||
+      //   item.includes("mp3") ||
+      //   item.includes(")")
+      //     ? false
+      //     : true
+      // )
+
+      // fileWithHashes.push({ file, title, artist, hash });
+      fileWithHashes.push({
+        file,
+        title,
+        artist: artist || "unknown",
+        hash,
+      });
+    }
+
+    let filesWithTitleAndArtist = fileWithHashes.filter(
+      (item) => item.title && item.artist
+    );
+    console.log(
+      `🟡files filtered by title and artists : ${filesWithTitleAndArtist.length}`
+    );
+
+    for (let i = 0; i < filesWithTitleAndArtist.length; ++i) {
+      console.log(
+        `🟡validating file:${i + 1} out of:${
+          filesWithTitleAndArtist.length
+        } for duplicates`
+      );
+
+      const file = filesWithTitleAndArtist[i];
+      const res = await checkSongAvailability({
+        title: file.title,
+        hash: file.hash,
+      });
+
+      if (!res || !res?.success) filesWithTitleAndArtist[i] = null;
+    }
+    filesWithTitleAndArtist = filesWithTitleAndArtist.filter((item) => item);
+
+    console.log(
+      `🟡files after duplicate validation: ${filesWithTitleAndArtist.length}`
+    );
+
+    for (let i = 0; i < filesWithTitleAndArtist.length; ++i) {
+      console.log(`🟡getting length for audio file`);
+
+      const fileObj = filesWithTitleAndArtist[i];
+      const length = await getAudioLength(fileObj.file);
+
+      filesWithTitleAndArtist[i].length = length;
+    }
+
+    const finalFiles = filesWithTitleAndArtist.filter((item) => item.length);
+    console.log(`🟡final files with all valid data: ${finalFiles.length}`);
+
+    for (let i = 0; i < finalFiles.length; ++i) {
+      console.log(
+        `🟡uploading file:${i + 1} out of:${
+          finalFiles.length
+        } to firebase storage`
+      );
+
+      const fileObj = finalFiles[i];
+      const url = await uploadAudioSync(fileObj.file);
+
+      finalFiles[i].url = url;
+    }
+
+    console.log("FINAL FILES:", finalFiles);
+
+    for (let i = 0; i < finalFiles.length; ++i) {
+      console.log(
+        `🟡adding file:${i + 1} out of:${finalFiles.length} to database`
+      );
+
+      const file = finalFiles[i];
+      await addNewSong({
+        ...file,
+        fileType: file.file.type,
+      });
+    }
+
+    console.log(`🟢Bulk song addition completed`);
+  };
+
+  const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (uploadDetails.uploading) {
       fileInputRef.current.value = "";
@@ -97,6 +246,23 @@ function AddSongModal({ onClose, onSuccess }) {
     }
 
     setValues((prev) => ({ ...prev, title: file.name.split(".")[0] }));
+
+    setUploadButtonText("Checking...");
+    const hash = await getFileHashSha256(file);
+    const res = await checkSongAvailability({
+      hash,
+      title: file.name,
+    });
+    setUploadButtonText(defaultUploadText);
+
+    if (!res || !res?.success) {
+      setErrors((prev) => ({
+        ...prev,
+        file: res?.message || "Similar song already exists",
+      }));
+      return;
+    }
+
     setUploadDetails({
       uploading: true,
       progress: 0,
@@ -198,7 +364,9 @@ function AddSongModal({ onClose, onSuccess }) {
           style={{ display: "none" }}
           ref={fileInputRef}
           accept=".mp3,.wav"
+          multiple
           onChange={handleFileChange}
+          // onChange={handleBulkFileUpload}
         />
 
         <p className={styles.title}>Upload new song</p>
@@ -224,7 +392,7 @@ function AddSongModal({ onClose, onSuccess }) {
                   className={styles.upload}
                   onClick={() => fileInputRef.current.click()}
                 >
-                  {uploadDetails.uploadedFile || "Click to upload"}
+                  {uploadDetails.uploadedFile || uploadButtonText}
                 </p>
               )}
             </div>
