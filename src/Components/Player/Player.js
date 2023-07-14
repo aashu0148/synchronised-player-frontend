@@ -28,7 +28,7 @@ const socketEventEnum = {
   playSong: "play-song",
   addSong: "add-song",
   notification: "notification",
-  userChange: "user-change",
+  usersChange: "users-change",
   joinedRoom: "joined-room",
 };
 let DB = new Dexie("sleeping-owl-music");
@@ -236,8 +236,8 @@ function Player({ socket }) {
       ]);
     });
 
-    socket.on(socketEventEnum.userChange, (data) => {
-      if (!data?._id) return;
+    socket.on(socketEventEnum.usersChange, (data) => {
+      if (!data?.users?.length) return;
 
       dispatch({
         type: actionTypes.UPDATE_ROOM,

@@ -283,6 +283,8 @@ function PlayerDetailsModal({
     </div>
   );
 
+  // console.log("room", roomDetails);
+
   return (
     <Modal onClose={onClose}>
       <div className={styles.container}>

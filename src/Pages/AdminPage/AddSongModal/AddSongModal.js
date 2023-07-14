@@ -47,10 +47,10 @@ function AddSongModal({ onClose, onSuccess }) {
         success: false,
         message: "Not a audio file",
       };
-    if (size / 1024 / 1024 > 10)
+    if (size / 1024 / 1024 > 5)
       return {
         success: false,
-        message: `File must be smaller than 10MB, found: ${parseFloat(
+        message: `Due to constraints of free servers, right now we only accept files smaller than 5MB, found: ${parseFloat(
           size / 1024 / 1024
         ).toFixed(2)}MB`,
       };
