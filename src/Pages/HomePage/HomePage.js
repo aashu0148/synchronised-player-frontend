@@ -11,6 +11,7 @@ import { getRandomInteger } from "utils/util";
 import actionTypes from "store/actionTypes";
 
 import styles from "./HomePage.module.scss";
+import AddSongModal from "Pages/AdminPage/AddSongModal/AddSongModal";
 
 const lightColors = [
   "#fff",
@@ -35,6 +36,7 @@ function HomePage({ socket }) {
   const [rooms, setRooms] = useState([]);
   const [openModals, setOpenModals] = useState({
     create: false,
+    addSong: false,
   });
   const [deletingRoom, setDeletingRoom] = useState("");
 
@@ -90,6 +92,10 @@ function HomePage({ socket }) {
     );
   };
 
+  const handleSongUploaded = () => {
+    dispatch({ type: actionTypes.NEW_SONG_UPLOADED });
+  };
+
   useEffect(() => {
     fetchAllRooms();
   }, []);
@@ -106,15 +112,32 @@ function HomePage({ socket }) {
           onSuccess={() => fetchAllRooms()}
         />
       )}
+      {openModals.addSong && (
+        <AddSongModal
+          onClose={() => setOpenModals((prev) => ({ ...prev, addSong: false }))}
+          onSuccess={handleSongUploaded}
+        />
+      )}
 
       <div className={styles.header}>
         <p className={styles.title}>Available Rooms</p>
 
-        <Button
-          onClick={() => setOpenModals((prev) => ({ ...prev, create: true }))}
-        >
-          + Create room
-        </Button>
+        <div className={styles.buttons}>
+          <Button
+            onClick={() =>
+              setOpenModals((prev) => ({ ...prev, addSong: true }))
+            }
+            outlineButton
+          >
+            + Upload song
+          </Button>
+
+          <Button
+            onClick={() => setOpenModals((prev) => ({ ...prev, create: true }))}
+          >
+            + Create room
+          </Button>
+        </div>
       </div>
 
       <div className={styles.rooms}>

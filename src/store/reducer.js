@@ -5,10 +5,14 @@ const initialState = {
   mobileView: false,
   room: {},
   joiningRoom: "",
+  songUploadedTimestamp: "",
 };
 
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
+    case actionTypes.NEW_SONG_UPLOADED: {
+      return { ...state, songUploadedTimestamp: Date.now() };
+    }
     case actionTypes.JOINING_ROOM: {
       return { ...state, joiningRoom: action.roomId };
     }

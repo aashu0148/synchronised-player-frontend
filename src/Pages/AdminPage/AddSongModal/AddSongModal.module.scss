@@ -124,4 +124,40 @@
     align-items: center;
     gap: 20px;
   }
+
+  @media (max-width: $breakpoint-md) {
+    gap: 20px;
+    padding: 20px;
+
+    .title {
+      font-size: 18px;
+    }
+
+    .form {
+      .item {
+        label {
+          font-size: 14px;
+        }
+      }
+
+      .uploadBox {
+        .upload {
+          padding: 8px 20px;
+          font-size: 14px;
+        }
+
+        .uploading {
+          padding: 8px 20px;
+
+          .title {
+            font-size: 14px;
+          }
+
+          .progress {
+            font-size: 14px;
+          }
+        }
+      }
+    }
+  }
 }

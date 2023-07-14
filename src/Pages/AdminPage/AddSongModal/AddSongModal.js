@@ -199,7 +199,7 @@ function AddSongModal({ onClose, onSuccess }) {
           onChange={handleFileChange}
         />
 
-        <p className={styles.title}>Add new song</p>
+        <p className={styles.title}>Upload new song</p>
 
         <div className={styles.form}>
           <div className={styles.item}>

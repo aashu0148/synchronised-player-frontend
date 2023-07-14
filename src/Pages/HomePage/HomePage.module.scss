@@ -8,13 +8,22 @@
 
   .header {
     display: flex;
+    flex-wrap: wrap;
     gap: 20px;
+    row-gap: 10px;
     justify-content: space-between;
     align-items: center;
 
     .title {
       font-size: 26px;
       font-weight: bold;
+    }
+
+    .buttons {
+      margin-left: auto;
+      display: flex;
+      gap: 20px;
+      align-items: center;
     }
   }
 

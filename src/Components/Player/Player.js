@@ -58,6 +58,9 @@ function Player({ socket }) {
   const roomDetails = useSelector((state) => state.root.room);
   const userDetails = useSelector((state) => state.root.user);
   const isMobileView = useSelector((state) => state.root.mobileView);
+  const lastSongUploadedTime = useSelector(
+    (state) => state.root.songUploadedTimestamp
+  );
 
   const [availableSongs, setAvailableSongs] = useState([]);
   const [inputElemProgress, setInputElemProgress] = useState(0);
@@ -490,8 +493,11 @@ function Player({ socket }) {
   }, [isBuffering]);
 
   useEffect(() => {
-    setIsFirstRender(false);
     fetchAllSongs();
+  }, [lastSongUploadedTime]);
+
+  useEffect(() => {
+    setIsFirstRender(false);
     cleanIndexDBIfNeeded();
 
     setInterval(greetBackend, 120 * 1000);
