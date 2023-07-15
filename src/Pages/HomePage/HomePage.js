@@ -7,7 +7,7 @@ import Spinner from "Components/Spinner/Spinner";
 import CreateRoomModal from "./CreateRoomModal/CreateRoomModal";
 
 import { deleteRoom, getAllRooms } from "apis/room";
-import { getRandomInteger } from "utils/util";
+import { getRandomInteger, getTimeDurationFromSeconds } from "utils/util";
 import actionTypes from "store/actionTypes";
 
 import styles from "./HomePage.module.scss";
@@ -101,7 +101,7 @@ function HomePage({ socket }) {
 
   useEffect(() => {
     fetchAllRooms();
-  }, []);
+  }, [roomDetails._id]);
 
   return loadingPage ? (
     <div className="spinner-container">
@@ -167,20 +167,47 @@ function HomePage({ socket }) {
               <div className={styles.playlist}>
                 <label>Few songs from this room</label>
 
-                <div className={styles.songs}>
-                  {item.playlist.length ? (
-                    item.playlist.slice(0, 5).map((s) => (
-                      <div className={styles.song} key={s._id}>
-                        {s.title}
-                      </div>
-                    ))
-                  ) : (
-                    <p>No songs for now!</p>
-                  )}
-                </div>
+                {Array.isArray(item.playlist) && item.playlist.length ? (
+                  <div className={styles.songs}>
+                    {item.playlist.length ? (
+                      item.playlist.slice(0, 5).map((s) => (
+                        <div className={styles.song} key={s._id}>
+                          {s.title}
+                        </div>
+                      ))
+                    ) : (
+                      <p>No songs for now!</p>
+                    )}
+                  </div>
+                ) : (
+                  ""
+                )}
               </div>
 
               <div className={styles.footer}>
+                {Array.isArray(item.playlist) && item.playlist.length ? (
+                  <div className={styles.duration}>
+                    <label>Total songs:</label>
+                    <p className={styles.value}>
+                      {item.playlist.length}
+
+                      <span>
+                        {" "}
+                        {"["}
+                        {getTimeDurationFromSeconds(
+                          item.playlist.reduce(
+                            (acc, curr) => acc + (curr.length || 0),
+                            0
+                          )
+                        )}
+                        {"]"}
+                      </span>
+                    </p>
+                  </div>
+                ) : (
+                  ""
+                )}
+
                 <div className={styles.user}>
                   <div className={styles.image}>
                     <img

@@ -87,3 +87,95 @@ export const deleteRoom = async (rid) => {
     return false;
   }
 };
+
+export const promoteToAdmin = async (rid, uid) => {
+  const reqPath = `/room/${rid}/promote/admin/${uid}`;
+  let response;
+
+  try {
+    response = await fetchWrapper(reqPath);
+    const data = await response.json();
+    if (!data?.success) {
+      errorToastLogger(
+        "promoteToAdmin",
+        data?.message || "Failed to promote to admin",
+        data?.error
+      );
+      return false;
+    }
+    return data;
+  } catch (err) {
+    errorToastLogger("promoteToAdmin", "Failed to promote to admin", err);
+    return false;
+  }
+};
+
+export const promoteToController = async (rid, uid) => {
+  const reqPath = `/room/${rid}/promote/controller/${uid}`;
+  let response;
+
+  try {
+    response = await fetchWrapper(reqPath);
+    const data = await response.json();
+    if (!data?.success) {
+      errorToastLogger(
+        "promoteToController",
+        data?.message || "Failed to promote to controller",
+        data?.error
+      );
+      return false;
+    }
+    return data;
+  } catch (err) {
+    errorToastLogger(
+      "promoteToController",
+      "Failed to promote to controller",
+      err
+    );
+    return false;
+  }
+};
+
+export const demoteAdmin = async (rid, uid) => {
+  const reqPath = `/room/${rid}/demote/admin/${uid}`;
+  let response;
+
+  try {
+    response = await fetchWrapper(reqPath);
+    const data = await response.json();
+    if (!data?.success) {
+      errorToastLogger(
+        "demoteAdmin",
+        data?.message || "Failed to demote admin",
+        data?.error
+      );
+      return false;
+    }
+    return data;
+  } catch (err) {
+    errorToastLogger("demoteAdmin", "Failed to demote admin", err);
+    return false;
+  }
+};
+
+export const demoteController = async (rid, uid) => {
+  const reqPath = `/room/${rid}/demote/controller/${uid}`;
+  let response;
+
+  try {
+    response = await fetchWrapper(reqPath);
+    const data = await response.json();
+    if (!data?.success) {
+      errorToastLogger(
+        "demoteController",
+        data?.message || "Failed to demote controller",
+        data?.error
+      );
+      return false;
+    }
+    return data;
+  } catch (err) {
+    errorToastLogger("demoteController", "Failed to demote controller", err);
+    return false;
+  }
+};

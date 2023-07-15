@@ -16,8 +16,18 @@ const firebaseConfig = {
   appId: "1:938122370109:web:e933784ba2841432e5de54",
   measurementId: "G-93BVE8ZGPP",
 };
+const firebaseConfig2 = {
+  apiKey: "AIzaSyCcfbNR6CThUV8NITItK60UkFePcYHAMsE",
+  authDomain: "sleeping-owl-music-2.firebaseapp.com",
+  projectId: "sleeping-owl-music-2",
+  storageBucket: "sleeping-owl-music-2.appspot.com",
+  messagingSenderId: "1044286995219",
+  appId: "1:1044286995219:web:e205d8f870eb52cad938e6",
+  measurementId: "G-HWDDDXT69G",
+};
 
-const app = initializeApp(firebaseConfig);
+// const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig2);
 
 const auth = getAuth();
 

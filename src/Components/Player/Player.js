@@ -279,6 +279,7 @@ function Player({ socket }) {
     });
 
     socket.on(socketEventEnum.usersChange, (data) => {
+      console.log("users change", data);
       if (!data?.users?.length) return;
 
       dispatch({
@@ -521,6 +522,14 @@ function Player({ socket }) {
     }
   };
 
+  const sendHeartbeat = () => {
+    if (socket)
+      socket.emit("alive", {
+        userId: userDetails._id,
+        roomId: roomDetails._id,
+      });
+  };
+
   const greetBackend = async () => {
     await sayHiToBackend();
   };
@@ -544,6 +553,7 @@ function Player({ socket }) {
     cleanIndexDBIfNeeded();
 
     setInterval(greetBackend, 120 * 1000);
+    setInterval(sendHeartbeat, 60 * 1000);
 
     if (bufferCheckingInterval) {
       clearInterval(bufferCheckingInterval);

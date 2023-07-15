@@ -230,3 +230,25 @@ export function shuffleArray(arr = []) {
 
   return array;
 }
+
+export const getTimeDurationFromSeconds = (totalSeconds = 0) => {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  let duration = "";
+
+  if (hours > 0) {
+    duration += hours + "hr ";
+  }
+
+  if (minutes > 0) {
+    duration += minutes + "min ";
+  }
+
+  // if (seconds > 0) {
+  //   duration += seconds + "sec";
+  // }
+
+  return duration.trim();
+};

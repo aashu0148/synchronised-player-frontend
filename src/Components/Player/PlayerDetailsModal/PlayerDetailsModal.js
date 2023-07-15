@@ -1,7 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { Headphones, Send, Shuffle, X } from "react-feather";
+import {
+  ArrowDown,
+  ArrowUp,
+  Headphones,
+  Send,
+  Shuffle,
+  X,
+} from "react-feather";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import { toast } from "react-hot-toast";
 
 import Modal from "Components/Modal/Modal";
 import InputSelect from "Components/InputControl/InputSelect/InputSelect";
@@ -9,8 +17,16 @@ import Button from "Components/Button/Button";
 
 import { dragIcon, pauseIcon, playIcon } from "utils/svgs";
 import { getTimeFormatted } from "utils/util";
+import { roomUserTypeEnum } from "utils/constants";
+import {
+  demoteAdmin,
+  demoteController,
+  promoteToAdmin,
+  promoteToController,
+} from "apis/room";
 
 import styles from "./PlayerDetailsModal.module.scss";
+import Spinner from "Components/Spinner/Spinner";
 
 function PlayerDetailsModal({
   onClose,
@@ -35,10 +51,12 @@ function PlayerDetailsModal({
   };
   const userDetails = useSelector((state) => state.root.user);
   const roomDetails = useSelector((state) => state.root.room);
+  const isMobileView = useSelector((state) => state.root.mobileView);
 
   const [activeTab, setActiveTab] = useState(tabsEnum.playlist);
   const [playlist, setPlaylist] = useState(roomDetails.playlist || []);
   const [inputMessage, setInputMessage] = useState("");
+  const [updatingAccessForUser, setUpdatingAccessForUser] = useState("");
 
   const handleDragEnd = (dragObj) => {
     const si = dragObj.source?.index;
@@ -62,6 +80,38 @@ function PlayerDetailsModal({
     setInputMessage("");
 
     if (onMessageSent) onMessageSent(msg);
+  };
+
+  const handlePromoteClick = async (uid, role) => {
+    if (role == roomUserTypeEnum.owner || role == roomUserTypeEnum.admin)
+      return;
+
+    setUpdatingAccessForUser(uid);
+    let res =
+      role == roomUserTypeEnum.member
+        ? await promoteToController(roomDetails._id, uid)
+        : await promoteToAdmin(roomDetails._id, uid);
+    setUpdatingAccessForUser("");
+
+    if (!res) return;
+
+    toast.success(res?.data?.message || "Access updated");
+  };
+
+  const handleDemoteClick = async (uid, role) => {
+    if (role == roomUserTypeEnum.owner || role == roomUserTypeEnum.member)
+      return;
+
+    setUpdatingAccessForUser(uid);
+    let res =
+      role == roomUserTypeEnum.admin
+        ? await demoteAdmin(roomDetails._id, uid)
+        : await demoteController(roomDetails._id, uid);
+    setUpdatingAccessForUser("");
+
+    if (!res) return;
+
+    toast.success(res?.data?.message || "Access updated");
   };
 
   useEffect(() => {
@@ -88,6 +138,11 @@ function PlayerDetailsModal({
   useEffect(() => {
     setPlaylist(roomDetails.playlist);
   }, [roomDetails.playlist]);
+
+  const userRole = Array.isArray(roomDetails.users)
+    ? roomDetails.users.find((item) => item._id == userDetails._id)?.role ||
+      roomUserTypeEnum.member
+    : roomUserTypeEnum.member;
 
   const musicBar = (
     <div className={styles.musicBar}>
@@ -299,9 +354,57 @@ function PlayerDetailsModal({
               <p className={styles.name}>{item.name}</p>
             </div>
 
-            <p className={styles.role}>
-              {roomDetails.owner?._id == item._id ? "Owner" : item.role}
-            </p>
+            <div className={styles.right}>
+              {item.role == roomUserTypeEnum.owner ||
+              item._id == userDetails._id ? (
+                ""
+              ) : (
+                <>
+                  {item.role == roomUserTypeEnum.admin ||
+                  item.role == userRole ||
+                  userRole == roomUserTypeEnum.member ||
+                  userRole == roomUserTypeEnum.controller ? (
+                    ""
+                  ) : (
+                    <Button
+                      title={`Prompt to Admin`}
+                      className={styles.green}
+                      onClick={() => handlePromoteClick(item._id, item.role)}
+                      disabled={updatingAccessForUser == item._id}
+                    >
+                      {isMobileView ? "" : "Promote "}
+                      {updatingAccessForUser == item._id ? (
+                        <Spinner small white />
+                      ) : (
+                        <ArrowUp />
+                      )}
+                    </Button>
+                  )}
+
+                  {item.role == roomUserTypeEnum.member ||
+                  item.role == userRole ||
+                  userRole == roomUserTypeEnum.member ||
+                  userRole == roomUserTypeEnum.controller ? (
+                    ""
+                  ) : (
+                    <Button
+                      title={`Demote to Member`}
+                      className={styles.red}
+                      onClick={() => handleDemoteClick(item._id, item.role)}
+                      disabled={updatingAccessForUser == item._id}
+                    >
+                      {isMobileView ? "" : "Demote "}
+                      {updatingAccessForUser == item._id ? (
+                        <Spinner small white />
+                      ) : (
+                        <ArrowDown />
+                      )}
+                    </Button>
+                  )}
+                </>
+              )}
+              <p className={styles.role}>{item.role}</p>
+            </div>
           </div>
         ))
       ) : (

@@ -333,6 +333,7 @@
         display: flex;
         gap: 10px;
         align-items: center;
+        overflow: hidden;
 
         .image {
           display: flex;
@@ -352,7 +353,37 @@
         }
       }
 
+      .right {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+
+        button {
+          padding: 6px;
+          border-radius: 5px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          svg {
+            height: 18px;
+            width: 18px;
+          }
+        }
+
+        .green {
+          background-color: $green;
+          color: $white !important;
+        }
+
+        .red {
+          background-color: $red;
+          color: $white !important;
+        }
+      }
+
       .role {
+        min-width: 60px;
         font-size: 16px;
         line-height: 22px;
         font-weight: 600;
