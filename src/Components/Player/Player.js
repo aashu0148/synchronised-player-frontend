@@ -44,6 +44,7 @@ DB.version(1).stores({
 
 let debounceTimeout,
   bufferCheckingInterval,
+  heartbeatInterval,
   globalBufferingVariable = false;
 let progressDetails = {
   mouseDown: false,
@@ -553,7 +554,6 @@ function Player({ socket }) {
     cleanIndexDBIfNeeded();
 
     setInterval(greetBackend, 120 * 1000);
-    setInterval(sendHeartbeat, 60 * 1000);
 
     if (bufferCheckingInterval) {
       clearInterval(bufferCheckingInterval);
@@ -574,6 +574,13 @@ function Player({ socket }) {
 
   useEffect(() => {
     handleSocketEvents();
+
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval);
+      heartbeatInterval = setInterval(sendHeartbeat, 60 * 1000);
+    } else {
+      heartbeatInterval = setInterval(sendHeartbeat, 60 * 1000);
+    }
 
     return () => {
       try {
