@@ -501,7 +501,7 @@ function Player({ socket }) {
         await DB.audios.delete(song.id);
       }
 
-      const maxSongsAllowedInDb = 120;
+      const maxSongsAllowedInDb = 180;
 
       if (files.length < maxSongsAllowedInDb) return;
 
