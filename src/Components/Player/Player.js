@@ -45,7 +45,8 @@ DB.version(1).stores({
 let debounceTimeout,
   bufferCheckingInterval,
   heartbeatInterval,
-  globalBufferingVariable = false;
+  globalBufferingVariable = false,
+  globalCurrentRoomId = "";
 let progressDetails = {
   mouseDown: false,
   progress: NaN,
@@ -280,7 +281,6 @@ function Player({ socket }) {
     });
 
     socket.on(socketEventEnum.usersChange, (data) => {
-      console.log("users change", data);
       if (!data?.users?.length) return;
 
       dispatch({
@@ -524,11 +524,13 @@ function Player({ socket }) {
   };
 
   const sendHeartbeat = () => {
-    if (socket)
+    if (socket) {
+      console.log("❤️ heartbeat");
       socket.emit("alive", {
         userId: userDetails._id,
-        roomId: roomDetails._id,
+        roomId: globalCurrentRoomId,
       });
+    }
   };
 
   const greetBackend = async () => {
@@ -536,6 +538,7 @@ function Player({ socket }) {
   };
 
   useEffect(() => {
+    globalCurrentRoomId = roomDetails._id;
     if (isFirstRender) return;
 
     updateAudioElementWithControls(roomDetails);
