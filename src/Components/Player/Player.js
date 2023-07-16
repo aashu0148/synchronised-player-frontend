@@ -678,7 +678,13 @@ function Player({ socket }) {
     <div className={styles.volumeButton}>
       <div
         className={styles.icon}
-        onClick={() => setVolumeDropdownOpen((prev) => !prev)}
+        onClick={() => {
+          if (volumeDropdownOpen) setVolumeDropdownOpen(false);
+          else {
+            setVolumeDropdownOpen(true);
+            debounce(() => setVolumeDropdownOpen(false), 3000);
+          }
+        }}
       >
         {volumeDropdownOpen ? (
           <p>{parseInt(currentVolume * 100)}</p>
