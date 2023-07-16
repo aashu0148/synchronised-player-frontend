@@ -16,6 +16,8 @@ import Button from "Components/Button/Button";
 import PlayerDetailsModal from "./PlayerDetailsModal/PlayerDetailsModal";
 
 import notificationSound from "assets/notification.mp3";
+import enterNotificationSound from "assets/enter_notification.wav";
+import leaveNotificationSound from "assets/leave_notification.wav";
 import actionTypes from "store/actionTypes";
 import {
   formatSecondsToMinutesSeconds,
@@ -56,7 +58,8 @@ let debounceTimeout,
   bufferCheckingInterval,
   heartbeatInterval,
   globalBufferingVariable = false,
-  globalCurrentRoomId = "";
+  globalCurrentRoomId = "",
+  globalCurrentRoomUsersLength = 0;
 let progressDetails = {
   mouseDown: false,
   progress: NaN,
@@ -64,6 +67,8 @@ let progressDetails = {
   roomId: "",
 };
 let downloadingFiles = [];
+const enterNotificationElem = new Audio(enterNotificationSound);
+const leaveNotificationElem = new Audio(leaveNotificationSound);
 const notificationElem = new Audio(notificationSound);
 let chatNotificationMuted = false;
 
@@ -307,11 +312,31 @@ function Player({ socket }) {
 
     socket.on(socketEventEnum.usersChange, (data) => {
       if (!data?.users?.length) return;
-
       dispatch({
         type: actionTypes.UPDATE_ROOM,
         room: { users: data.users },
       });
+
+      const newUsersLength = data?.users?.length;
+      console.log(
+        "users change",
+        data,
+        newUsersLength,
+        globalCurrentRoomUsersLength
+      );
+      if (newUsersLength !== globalCurrentRoomUsersLength) {
+        if (
+          newUsersLength > globalCurrentRoomUsersLength &&
+          enterNotificationElem
+        )
+          enterNotificationElem.play();
+
+        if (
+          newUsersLength < globalCurrentRoomUsersLength &&
+          leaveNotificationElem
+        )
+          leaveNotificationElem.play();
+      }
     });
 
     socket.on("left-room", () => {
@@ -587,6 +612,10 @@ function Player({ socket }) {
 
     updateAudioElementWithControls(roomDetails);
   }, [roomDetails.currentSong, roomDetails.secondsPlayed, roomDetails.paused]);
+
+  useEffect(() => {
+    globalCurrentRoomUsersLength = roomDetails?.users?.length || 0;
+  }, [roomDetails.users]);
 
   useEffect(() => {
     globalBufferingVariable = isBuffering;
