@@ -2,11 +2,18 @@ import React from "react";
 import { Linkedin, Mail } from "react-feather";
 
 import logo from "assets/logos/logo.svg";
+import { telegramIcon } from "utils/svgs";
 
 import styles from "./Footer.module.scss";
 
 function Footer() {
   const links = [
+    {
+      link: "https://t.me/yesitsaashu",
+      value: "telegram",
+      label: "Telegram",
+      icon: telegramIcon,
+    },
     {
       link: "https://www.linkedin.com/in/aashu0148",
       value: "linkedin",
