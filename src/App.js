@@ -57,10 +57,33 @@ function App() {
 
   const handleSocketEvents = () => {
     socket.on("connect", () => {
+      dispatch({
+        type: actionTypes.UPDATE_BANNER,
+        banner: {
+          green: true,
+          text: "🟢 Connection established successfully!",
+        },
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: actionTypes.DELETE_BANNER,
+        });
+      }, 3000);
+
       console.log("🔵 Socket connected", socket);
     });
 
     socket.on("disconnect", () => {
+      dispatch({
+        type: actionTypes.UPDATE_BANNER,
+        banner: {
+          red: true,
+          blinking: true,
+          text: "🟡 Socket disconnected, trying to reconnect",
+        },
+      });
+
       console.log("🔴 Socket disconnected");
     });
 

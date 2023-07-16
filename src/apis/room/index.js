@@ -179,3 +179,25 @@ export const demoteController = async (rid, uid) => {
     return false;
   }
 };
+
+export const getCurrentRoom = async () => {
+  const reqPath = `/room/current`;
+  let response;
+
+  try {
+    response = await fetchWrapper(reqPath);
+    const data = await response.json();
+    if (!data?.success) {
+      errorToastLogger(
+        "getCurrentRoom",
+        data?.message || "Failed to get user's room",
+        data?.error
+      );
+      return false;
+    }
+    return data;
+  } catch (err) {
+    errorToastLogger("getCurrentRoom", "Failed to get user's room", err);
+    return false;
+  }
+};

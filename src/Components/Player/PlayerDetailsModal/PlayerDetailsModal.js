@@ -6,6 +6,8 @@ import {
   Headphones,
   Send,
   Shuffle,
+  Volume2,
+  VolumeX,
   X,
 } from "react-feather";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
@@ -41,6 +43,8 @@ function PlayerDetailsModal({
   onMessageSent,
   chatUnreadCount = 0,
   updateChatUnreadCount,
+  chatNotificationMuted,
+  toggleChatNotificationMute,
 }) {
   const messagesRef = useRef();
   const tabsEnum = {
@@ -115,6 +119,8 @@ function PlayerDetailsModal({
   };
 
   useEffect(() => {
+    if (chatUnreadCount > 0) setActiveTab(tabsEnum.chat);
+
     if (activeTab == tabsEnum.chat) {
       if (messagesRef.current) {
         messagesRef.current.scrollTo({
@@ -413,9 +419,15 @@ function PlayerDetailsModal({
     </div>
   );
 
-  const getMessageDiv = (chat = {}, isRight = false, isConcurrent = false) => {
+  const getMessageDiv = (
+    chat = {},
+    isRight = false,
+    isConcurrent = false,
+    index
+  ) => {
     return (
       <div
+        key={chat.user.name + "" + index}
         className={`${styles.message} ${isRight ? styles.rightMessage : ""} ${
           isConcurrent ? styles.concurrent : ""
         }`}
@@ -453,7 +465,8 @@ function PlayerDetailsModal({
                 item,
                 item.user?._id == userDetails._id,
                 index > 0 &&
-                  roomDetails.chats[index - 1].user?._id == item.user?._id
+                  roomDetails.chats[index - 1].user?._id == item.user?._id,
+                index
               )
             )
           ) : (
@@ -527,6 +540,21 @@ function PlayerDetailsModal({
               }`}
               onClick={() => setActiveTab(item)}
             >
+              {item == tabsEnum.chat && activeTab == tabsEnum.chat ? (
+                <div
+                  className={styles.muteButton}
+                  onClick={() =>
+                    toggleChatNotificationMute
+                      ? toggleChatNotificationMute()
+                      : ""
+                  }
+                >
+                  {chatNotificationMuted ? <VolumeX /> : <Volume2 />}
+                </div>
+              ) : (
+                ""
+              )}
+
               {item}
 
               {item == tabsEnum.chat && chatUnreadCount > 0 ? (

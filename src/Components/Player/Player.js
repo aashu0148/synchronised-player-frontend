@@ -1,18 +1,27 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { ChevronUp, Headphones, LogOut, Pause, Play } from "react-feather";
+import {
+  ChevronUp,
+  Headphones,
+  LogOut,
+  Volume,
+  Volume1,
+  Volume2,
+  VolumeX,
+} from "react-feather";
 import { toast } from "react-hot-toast";
 import Dexie from "dexie";
 
 import Button from "Components/Button/Button";
 import PlayerDetailsModal from "./PlayerDetailsModal/PlayerDetailsModal";
 
+import notificationSound from "assets/notification.mp3";
+import actionTypes from "store/actionTypes";
 import {
   formatSecondsToMinutesSeconds,
   getFileHashSha256,
   shuffleArray,
 } from "utils/util";
-import actionTypes from "store/actionTypes";
 import {
   nextPlayIcon,
   pauseIcon,
@@ -21,6 +30,7 @@ import {
 } from "utils/svgs";
 import { getAllSongs } from "apis/song";
 import { sayHiToBackend } from "apis/user";
+import { getCurrentRoom } from "apis/room";
 
 import styles from "./Player.module.scss";
 
@@ -53,6 +63,10 @@ let progressDetails = {
   song: {},
   roomId: "",
 };
+let downloadingFiles = [];
+const notificationElem = new Audio(notificationSound);
+let chatNotificationMuted = false;
+
 function Player({ socket }) {
   const audioElemRef = useRef();
 
@@ -64,6 +78,7 @@ function Player({ socket }) {
     (state) => state.root.songUploadedTimestamp
   );
 
+  const [_dummyState, setDummyState] = useState(0);
   const [availableSongs, setAvailableSongs] = useState([]);
   const [inputElemProgress, setInputElemProgress] = useState(0);
   const [audioElemCurrTime, setAudioElemCurrTime] = useState(0);
@@ -72,6 +87,10 @@ function Player({ socket }) {
   const [showMoreDetailsModal, setShowMoreDetailsModal] = useState(false);
   const [roomNotifications, setRoomNotifications] = useState([]);
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
+  const [volumeDropdownOpen, setVolumeDropdownOpen] = useState(false);
+  const [currentVolume, setCurrentVolume] = useState(
+    parseFloat(localStorage.getItem("song-volume")) || 0.8
+  );
 
   const isPlayerActive = roomDetails?._id ? true : false;
   const currentSong =
@@ -278,6 +297,12 @@ function Player({ socket }) {
 
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
       setChatUnreadCount((prev) => prev + 1);
+
+      const lastChat = Array.isArray(data.chats)
+        ? data.chats[data.chats.length - 1]
+        : {};
+      if (!chatNotificationMuted && lastChat?.user?._id !== userDetails._id)
+        playNotification();
     });
 
     socket.on(socketEventEnum.usersChange, (data) => {
@@ -332,6 +357,10 @@ function Player({ socket }) {
     setAudioElemCurrTime(currSeconds);
   };
 
+  const playNotification = () => {
+    if (notificationElem) notificationElem.play();
+  };
+
   const playAudio = (audio, buffering = isBuffering) => {
     debounce(() => {
       if (!buffering) audio.play();
@@ -373,7 +402,8 @@ function Player({ socket }) {
       setIsBuffering(true);
       clearTimeout(debounceTimeout);
 
-      getAudioFileFromUrlAndStore(currentSong.url, currentSong.title);
+      if (!downloadingFiles.includes(currentSong.url))
+        getAudioFileFromUrlAndStore(currentSong.url, currentSong.title);
     } else {
       if (room.paused) pauseAudio(audio);
       else playAudio(audio);
@@ -429,9 +459,11 @@ function Player({ socket }) {
       const res = await fetch(url);
       if (res.status !== 200 || !res.ok) return;
 
+      downloadingFiles.push(url);
       const blob = await res.blob();
       const hash = await getFileHashSha256(blob);
 
+      downloadingFiles = downloadingFiles.filter((item) => item !== url);
       if (!blob || !hash) return;
 
       addAudioToIndexDB(blob, hash, url, name);
@@ -523,6 +555,18 @@ function Player({ socket }) {
     }
   };
 
+  const getCurrentRoomForUser = async () => {
+    const res = await getCurrentRoom();
+    if (!res?.data?.roomId) return;
+
+    sendHeartbeat();
+    socket.emit("join-room", {
+      roomId: res.data.roomId,
+      userId: userDetails._id,
+      ...userDetails,
+    });
+  };
+
   const sendHeartbeat = () => {
     if (socket) {
       console.log("❤️ heartbeat");
@@ -553,8 +597,15 @@ function Player({ socket }) {
   }, [lastSongUploadedTime]);
 
   useEffect(() => {
+    if (audioElemRef.current) audioElemRef.current.volume = currentVolume;
+
+    localStorage.setItem("song-volume", currentVolume);
+  }, [currentVolume]);
+
+  useEffect(() => {
     setIsFirstRender(false);
     cleanIndexDBIfNeeded();
+    getCurrentRoomForUser();
 
     setInterval(greetBackend, 120 * 1000);
 
@@ -600,6 +651,39 @@ function Player({ socket }) {
     </div>
   );
 
+  const volumeButton = (
+    <div className={styles.volumeButton}>
+      <div
+        className={styles.icon}
+        onClick={() => setVolumeDropdownOpen((prev) => !prev)}
+      >
+        {volumeDropdownOpen ? (
+          <p>{parseInt(currentVolume * 100)}</p>
+        ) : currentVolume == 0 ? (
+          <VolumeX />
+        ) : currentVolume < 0.2 ? (
+          <Volume />
+        ) : currentVolume < 0.6 ? (
+          <Volume1 />
+        ) : (
+          <Volume2 />
+        )}
+      </div>
+
+      {volumeDropdownOpen && (
+        <div className={styles.volumeBox}>
+          <input
+            type="range"
+            value={currentVolume * 100}
+            onChange={(event) => {
+              setCurrentVolume(event.target.value / 100);
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div
       className={`${styles.container} ${isPlayerActive ? "" : styles.inactive}`}
@@ -618,6 +702,11 @@ function Player({ socket }) {
           onMessageSent={handleSendMessage}
           chatUnreadCount={chatUnreadCount}
           updateChatUnreadCount={(c) => (isNaN(c) ? "" : setChatUnreadCount(c))}
+          chatNotificationMuted={chatNotificationMuted}
+          toggleChatNotificationMute={() => {
+            chatNotificationMuted = !chatNotificationMuted;
+            setDummyState((prev) => prev + 1);
+          }}
         />
       )}
       <div className={styles.inactiveOverlay} />
@@ -672,6 +761,8 @@ function Player({ socket }) {
 
       <div className={styles.controller}>
         <div className={styles.buttons}>
+          {volumeButton}
+
           <div
             className={`${styles.button} ${styles.prev}`}
             onClick={handlePreviousClick}

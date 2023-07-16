@@ -6,12 +6,25 @@ const initialState = {
   room: {},
   joiningRoom: "",
   songUploadedTimestamp: "",
+  banner: {},
 };
 
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.NEW_SONG_UPLOADED: {
       return { ...state, songUploadedTimestamp: Date.now() };
+    }
+    case actionTypes.UPDATE_BANNER: {
+      return {
+        ...state,
+        banner: typeof action.banner ? { ...action.banner } : {},
+      };
+    }
+    case actionTypes.DELETE_BANNER: {
+      return {
+        ...state,
+        banner: {},
+      };
     }
     case actionTypes.JOINING_ROOM: {
       return { ...state, joiningRoom: action.roomId };
