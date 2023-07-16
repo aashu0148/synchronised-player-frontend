@@ -318,12 +318,6 @@ function Player({ socket }) {
       });
 
       const newUsersLength = data?.users?.length;
-      console.log(
-        "users change",
-        data,
-        newUsersLength,
-        globalCurrentRoomUsersLength
-      );
       if (newUsersLength !== globalCurrentRoomUsersLength) {
         if (
           newUsersLength > globalCurrentRoomUsersLength &&
@@ -706,6 +700,8 @@ function Player({ socket }) {
             value={currentVolume * 100}
             onChange={(event) => {
               setCurrentVolume(event.target.value / 100);
+
+              debounce(() => setVolumeDropdownOpen(false), 1000);
             }}
           />
         </div>
