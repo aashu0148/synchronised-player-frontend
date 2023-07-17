@@ -46,6 +46,7 @@ const socketEventEnum = {
   addSong: "add-song",
   notification: "notification",
   chat: "chat",
+  clearChat: "clear-chat",
   usersChange: "users-change",
   joinedRoom: "joined-room",
 };
@@ -208,12 +209,13 @@ function Player({ socket }) {
     });
   };
 
-  const handleNextClick = () => {
+  const handleNextClick = (autoPlay = false) => {
     console.log("🟡next event emitted");
     socket.emit(socketEventEnum.next, {
       roomId: roomDetails._id,
       userId: userDetails._id,
       currentSongId: roomDetails.currentSong,
+      autoPlay: autoPlay == true ? true : false,
     });
   };
 
@@ -226,6 +228,14 @@ function Player({ socket }) {
       userId: userDetails._id,
       message: msg,
       timestamp: Date.now(),
+    });
+  };
+
+  const handleClearChats = () => {
+    console.log(`🟡${socketEventEnum.clearChat} event emitted`);
+    socket.emit(socketEventEnum.clearChat, {
+      roomId: roomDetails._id,
+      userId: userDetails._id,
     });
   };
 
@@ -267,6 +277,8 @@ function Player({ socket }) {
     });
 
     socket.on(socketEventEnum.next, (data) => {
+      if (audioElemRef.current) audioElemRef.current.currentTime = 0;
+
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
     });
 
@@ -301,6 +313,12 @@ function Player({ socket }) {
       if (!Array.isArray(data?.chats)) return;
 
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
+
+      if (!data?.chats?.length) {
+        setChatUnreadCount(0);
+        return;
+      }
+
       setChatUnreadCount((prev) => prev + 1);
 
       const lastChat = Array.isArray(data.chats)
@@ -372,7 +390,7 @@ function Player({ socket }) {
     const currSeconds = event.target.currentTime;
 
     if (parseInt(currSeconds) >= parseInt(currentSong.length))
-      handleNextClick();
+      handleNextClick(true);
     setAudioElemCurrTime(currSeconds);
   };
 
@@ -738,6 +756,7 @@ function Player({ socket }) {
             chatNotificationMuted = !chatNotificationMuted;
             setDummyState((prev) => prev + 1);
           }}
+          onClearChatCLick={handleClearChats}
         />
       )}
       <div className={styles.inactiveOverlay} />

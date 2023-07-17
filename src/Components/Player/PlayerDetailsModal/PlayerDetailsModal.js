@@ -45,6 +45,7 @@ function PlayerDetailsModal({
   updateChatUnreadCount,
   chatNotificationMuted,
   toggleChatNotificationMute,
+  onClearChatCLick,
 }) {
   const messagesRef = useRef();
   const tabsEnum = {
@@ -458,21 +459,45 @@ function PlayerDetailsModal({
   const chatDiv = useMemo(
     () => (
       <div className={styles.chatBox}>
-        <div className={styles.messages} ref={messagesRef}>
-          {Array.isArray(roomDetails.chats) && roomDetails.chats.length ? (
-            roomDetails.chats.map((item, index) =>
-              getMessageDiv(
-                item,
-                item.user?._id == userDetails._id,
-                index > 0 &&
-                  roomDetails.chats[index - 1].user?._id == item.user?._id,
-                index
+        <div className={styles.messagesOuter}>
+          <div className={styles.chatToolbar}>
+            <Button
+              onClick={() =>
+                toggleChatNotificationMute ? toggleChatNotificationMute() : ""
+              }
+            >
+              {chatNotificationMuted ? <VolumeX /> : <Volume2 />}
+              {chatNotificationMuted ? "Muted" : "Sound"}
+            </Button>
+
+            {userRole == roomUserTypeEnum.owner ||
+            userRole == roomUserTypeEnum.admin ? (
+              <Button onClick={onClearChatCLick} outlineButton>
+                <X />
+                Clear chats
+              </Button>
+            ) : (
+              ""
+            )}
+          </div>
+
+          <div className={styles.messages} ref={messagesRef}>
+            {Array.isArray(roomDetails.chats) && roomDetails.chats.length ? (
+              roomDetails.chats.map((item, index) =>
+                getMessageDiv(
+                  item,
+                  item.user?._id == userDetails._id,
+                  index > 0 &&
+                    roomDetails.chats[index - 1].user?._id == item.user?._id,
+                  index
+                )
               )
-            )
-          ) : (
-            <p className={styles.empty}>No chats present for now!</p>
-          )}
+            ) : (
+              <p className={styles.empty}>No chats present for now!</p>
+            )}
+          </div>
         </div>
+
         <div className={styles.footer}>
           <input
             placeholder="Type something..."
@@ -490,7 +515,7 @@ function PlayerDetailsModal({
         </div>
       </div>
     ),
-    [roomDetails.chats, inputMessage]
+    [roomDetails.chats, inputMessage, chatNotificationMuted]
   );
 
   const activityDiv = (
@@ -540,21 +565,6 @@ function PlayerDetailsModal({
               }`}
               onClick={() => setActiveTab(item)}
             >
-              {item == tabsEnum.chat && activeTab == tabsEnum.chat ? (
-                <div
-                  className={styles.muteButton}
-                  onClick={() =>
-                    toggleChatNotificationMute
-                      ? toggleChatNotificationMute()
-                      : ""
-                  }
-                >
-                  {chatNotificationMuted ? <VolumeX /> : <Volume2 />}
-                </div>
-              ) : (
-                ""
-              )}
-
               {item}
 
               {item == tabsEnum.chat && chatUnreadCount > 0 ? (
