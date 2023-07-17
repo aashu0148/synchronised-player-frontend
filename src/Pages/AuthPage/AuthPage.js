@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   GoogleAuthProvider,
   getRedirectResult,
@@ -17,56 +17,57 @@ import actionTypes from "store/actionTypes";
 import styles from "./AuthPage.module.scss";
 
 function AuthPage() {
-  const dispatch = useDispatch();
+  const googleSignInButtonRef = useRef();
   const navigate = useNavigate();
   const userDetails = useSelector((state) => state.root.user);
+  const isMobileView = useSelector((state) => state.root.mobileView);
+  const [searchParams] = useSearchParams();
 
   const [loading, setLoading] = useState(true);
 
-  const handleLogin = async () => {
-    setLoading(true);
-    await signInWithRedirect(auth, googleAuthProvider);
-  };
+  const initializeGsi = (fallback = "") => {
+    if (!window.google) return;
+    const googleRedirectUrl = `${process.env.REACT_APP_BACKEND_URL}/user/google-login?origin=${window.location.origin}&fallback=${fallback}`;
 
-  const loginUserWithBackend = async (details) => {
-    const res = await loginUser(details);
-    setLoading(false);
-    if (!res?.data) return;
+    setTimeout(() => setLoading(false), 1000);
 
-    const { user, token } = res.data;
-    dispatch({ type: actionTypes.USER_LOGIN, user });
-    localStorage.setItem("sleeping-token", token);
-    navigate("/");
-    toast.success("Login successful");
-  };
-
-  const checkForRedirectionResults = async () => {
-    try {
-      const res = await getRedirectResult(auth);
-      if (!res) {
-        setLoading(false);
-        return;
-      }
-      const credential = GoogleAuthProvider.credentialFromResult(res);
-      const token = credential.accessToken;
-
-      const user = res.user?.reloadUserInfo;
-      loginUserWithBackend({
-        ...user,
-        name: user.displayName,
-        profileImage: user.photoUrl,
-        token,
-      });
-    } catch (err) {
-      console.log(err);
-
-      toast.error(`Error signing with google - ${err.message || ""}`);
-    }
+    window.google.accounts.id.initialize({
+      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+      ux_mode: "redirect",
+      login_uri: googleRedirectUrl,
+    });
+    window.google.accounts.id.renderButton(
+      document.getElementById("g_id_signin"),
+      { theme: "outline", size: "large", width: 390 }
+    );
   };
 
   useEffect(() => {
-    checkForRedirectionResults();
+    const fallback = searchParams.get("fallback");
+    const accessToken = searchParams.get("accessToken");
 
+    if (accessToken) {
+      localStorage.setItem("sleeping-token", accessToken);
+
+      if (fallback && fallback !== "null") window.location.replace(fallback);
+      else window.location.replace("/");
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.onload = () => initializeGsi(fallback);
+    script.async = true;
+    script.id = "google-client-script";
+    document.body.appendChild(script);
+
+    return () => {
+      if (window.google) window.google.accounts.id.cancel();
+
+      document.getElementById("google-client-script")?.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     if (userDetails._id) navigate("/");
   }, []);
 
@@ -80,7 +81,21 @@ function AuthPage() {
           login and make your mood with music
         </p>
 
-        <Button onClick={handleLogin} disabled={loading} useSpinnerWhenDisabled>
+        <Button
+          onClick={() =>
+            googleSignInButtonRef.current
+              ? googleSignInButtonRef.current.click()
+              : ""
+          }
+          disabled={loading}
+          useSpinnerWhenDisabled
+        >
+          <div
+            className={styles.actualGoogleButton}
+            ref={googleSignInButtonRef}
+            id="g_id_signin"
+            data-width={isMobileView ? 350 : 410}
+          />
           Google login
         </Button>
       </div>
