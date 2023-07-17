@@ -460,26 +460,28 @@ function PlayerDetailsModal({
     () => (
       <div className={styles.chatBox}>
         <div className={styles.messagesOuter}>
-          <div className={styles.chatToolbar}>
-            <Button
-              onClick={() =>
-                toggleChatNotificationMute ? toggleChatNotificationMute() : ""
-              }
-            >
-              {chatNotificationMuted ? <VolumeX /> : <Volume2 />}
-              {chatNotificationMuted ? "Muted" : "Sound"}
-            </Button>
-
-            {userRole == roomUserTypeEnum.owner ||
-            userRole == roomUserTypeEnum.admin ? (
-              <Button onClick={onClearChatCLick} outlineButton>
-                <X />
-                Clear chats
+          {roomDetails.chats?.length && (
+            <div className={styles.chatToolbar}>
+              <Button
+                onClick={() =>
+                  toggleChatNotificationMute ? toggleChatNotificationMute() : ""
+                }
+              >
+                {chatNotificationMuted ? <VolumeX /> : <Volume2 />}
+                {chatNotificationMuted ? "Muted" : "Sound"}
               </Button>
-            ) : (
-              ""
-            )}
-          </div>
+
+              {userRole == roomUserTypeEnum.owner ||
+              userRole == roomUserTypeEnum.admin ? (
+                <Button onClick={onClearChatCLick} outlineButton>
+                  <X />
+                  Clear chats
+                </Button>
+              ) : (
+                ""
+              )}
+            </div>
+          )}
 
           <div className={styles.messages} ref={messagesRef}>
             {Array.isArray(roomDetails.chats) && roomDetails.chats.length ? (
