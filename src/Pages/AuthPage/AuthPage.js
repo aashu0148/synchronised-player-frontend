@@ -1,18 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { toast } from "react-hot-toast";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  GoogleAuthProvider,
-  getRedirectResult,
-  signInWithRedirect,
-} from "firebase/auth";
 
 import Button from "Components/Button/Button";
-
-import { auth, googleAuthProvider } from "utils/firebase";
-import { loginUser } from "apis/user";
-import actionTypes from "store/actionTypes";
 
 import styles from "./AuthPage.module.scss";
 
@@ -29,7 +19,7 @@ function AuthPage() {
     if (!window.google) return;
     const googleRedirectUrl = `${process.env.REACT_APP_BACKEND_URL}/user/google-login?origin=${window.location.origin}&fallback=${fallback}`;
 
-    setTimeout(() => setLoading(false), 1000);
+    setTimeout(() => setLoading(false), 1200);
 
     window.google.accounts.id.initialize({
       client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
