@@ -460,7 +460,7 @@ function PlayerDetailsModal({
     () => (
       <div className={styles.chatBox}>
         <div className={styles.messagesOuter}>
-          {roomDetails.chats?.length && (
+          {roomDetails.chats?.length ? (
             <div className={styles.chatToolbar}>
               <Button
                 onClick={() =>
@@ -481,6 +481,8 @@ function PlayerDetailsModal({
                 ""
               )}
             </div>
+          ) : (
+            ""
           )}
 
           <div className={styles.messages} ref={messagesRef}>
