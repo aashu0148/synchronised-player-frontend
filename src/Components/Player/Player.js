@@ -22,6 +22,7 @@ import actionTypes from "store/actionTypes";
 import {
   formatSecondsToMinutesSeconds,
   getFileHashSha256,
+  getSongUrlFromBackupStorage,
   shuffleArray,
 } from "utils/util";
 import {
@@ -494,6 +495,25 @@ function Player({ socket }) {
   const getAudioFileFromUrlAndStore = async (url, name) => {
     try {
       const res = await fetch(url);
+      if (res.status == 402 && !res.ok) {
+        const newUrlRes = getSongUrlFromBackupStorage(url);
+        if (!newUrlRes.success) {
+          console.log("LIMIT REACHED!!");
+          return;
+        }
+
+        const newUrl = newUrlRes.url;
+        if (audioElemRef.current) {
+          audioElemRef.current.src = newUrl;
+          audioElemRef.current.load();
+          setIsBuffering(true);
+          clearTimeout(debounceTimeout);
+        }
+        getAudioFileFromUrlAndStore(newUrl, name);
+
+        return;
+      }
+
       if (res.status !== 200 || !res.ok) return;
 
       downloadingFiles.push(url);

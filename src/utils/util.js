@@ -252,3 +252,23 @@ export const getTimeDurationFromSeconds = (totalSeconds = 0) => {
 
   return duration.trim();
 };
+
+export const getSongUrlFromBackupStorage = (url) => {
+  if (!url) return { success: false, url: "" };
+
+  const backupBucket1 = "sleeping-owl-music-3";
+  // const backupBucket2 = "sleeping-owl-music-4";
+
+  if (url.includes(backupBucket1)) return { success: false, url: "" };
+
+  const sleepingOwlIndex = url.indexOf("sleeping-owl-music");
+  const appspotIndex = url.indexOf(".appspot.com/");
+
+  if (sleepingOwlIndex < 0 || appspotIndex < 0)
+    return { success: false, url: "" };
+
+  const newUrl =
+    url.slice(0, sleepingOwlIndex) + backupBucket1 + url.slice(appspotIndex);
+
+  return { success: true, url: newUrl };
+};
