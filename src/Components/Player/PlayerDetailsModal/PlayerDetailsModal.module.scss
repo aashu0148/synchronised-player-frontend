@@ -476,6 +476,7 @@
         display: flex;
         gap: 15px;
         align-items: flex-start;
+        min-width: 180px;
 
         .image {
           img,
@@ -487,12 +488,14 @@
         }
 
         .inner {
+          width: 100%;
           display: flex;
           flex-direction: column;
           background-color: $pinkish-white;
           border-radius: 10px;
           border-top-left-radius: 0;
           overflow: hidden;
+          position: relative;
 
           .name {
             width: 100%;
@@ -508,9 +511,19 @@
           .text {
             padding: 10px;
             padding-top: 0;
+            padding-bottom: 22px;
             font-size: 16px;
             line-height: 25px;
             word-break: break-word;
+          }
+
+          .timestamp {
+            font-size: 12px;
+            font-weight: 500;
+            text-align: end;
+            position: absolute;
+            bottom: 2px;
+            right: 10px;
           }
         }
       }
@@ -529,7 +542,8 @@
           }
 
           .name,
-          .text {
+          .text,
+          .timestamp {
             color: $white;
           }
         }

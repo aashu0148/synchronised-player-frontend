@@ -71,7 +71,7 @@ function App() {
         });
       }, 3000);
 
-      console.log("🔵 Socket connected", socket);
+      console.log("🔵 Socket connected");
     });
 
     socket.on("disconnect", () => {

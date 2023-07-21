@@ -451,6 +451,7 @@ function PlayerDetailsModal({
         <div className={`${styles.inner}`}>
           {!isConcurrent && <p className={styles.name}>{chat.user?.name}</p>}
           <p className={styles.text}>{chat.message}</p>
+          <p className={styles.timestamp}>{getTimeFormatted(chat.timestamp)}</p>
         </div>
       </div>
     );
