@@ -48,13 +48,20 @@ const socketEventEnum = {
   notification: "notification",
   chat: "chat",
   clearChat: "clear-chat",
+  voice: "voice",
   usersChange: "users-change",
   joinedRoom: "joined-room",
+  getRoom: "get-room",
 };
 let DB = new Dexie("sleeping-owl-music");
 DB.version(1).stores({
   audios: "++id,file,hash,url,name,createdAt",
 });
+
+let stream,
+  mediaRecorder,
+  audioChunks = [],
+  chatSoundEnabled = false;
 
 let debounceTimeout,
   bufferCheckingInterval,
@@ -260,6 +267,16 @@ function Player({ socket }) {
     });
   };
 
+  // const handleRefreshRoom = () => {
+  //   setChatUnreadCount(0);
+
+  //   console.log(`🟡${socketEventEnum.getRoom} event emitted`);
+  //   socket.emit(socketEventEnum.getRoom, {
+  //     roomId: roomDetails._id,
+  //     userId: userDetails._id,
+  //   });
+  // };
+
   const handleSocketEvents = () => {
     socket.on(socketEventEnum.seek, (data) => {
       if (isNaN(data?.secondsPlayed)) return;
@@ -310,6 +327,18 @@ function Player({ socket }) {
       ]);
     });
 
+    socket.on(socketEventEnum.voice, (data) => {
+      if (!data?.audio || !data?.userId) return;
+
+      const { audio, userId } = data;
+      console.log(audio);
+
+      if (!audio || !chatSoundEnabled) return;
+      const audioElem = new Audio(audio);
+
+      audioElem.play();
+    });
+
     socket.on(socketEventEnum.chat, (data) => {
       if (!Array.isArray(data?.chats)) return;
 
@@ -350,6 +379,12 @@ function Player({ socket }) {
         )
           leaveNotificationElem.play();
       }
+    });
+
+    socket.on(socketEventEnum.getRoom, (data) => {
+      if (!Object.keys(data?.room)?.length || !data?.room?._id) return;
+
+      dispatch({ type: actionTypes.ADD_ROOM, room: data.room });
     });
 
     socket.on("left-room", () => {
@@ -624,6 +659,115 @@ function Player({ socket }) {
     });
   };
 
+  const turnMicOn = async () => {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      startRecording();
+      setDummyState((prev) => prev + 1);
+      return true;
+    } catch (err) {
+      toast.error("Microphone permission needed");
+      console.log("🔴 Error getting permission", err);
+
+      return false;
+    }
+  };
+
+  const turnMicOff = async () => {
+    if (stream && stream.getTracks) {
+      stream.getTracks().forEach((track) => track.stop());
+
+      toast("Mic turned OFF");
+      stream = undefined;
+
+      stopRecording();
+      setDummyState((prev) => prev + 1);
+    }
+  };
+
+  const handleRecorderDataAvailable = (event) => {
+    audioChunks.push(event.data);
+  };
+
+  const handleRecorderStop = () => {
+    const audioBlob = new Blob(audioChunks);
+    audioChunks = [];
+    const fileReader = new FileReader();
+    fileReader.readAsDataURL(audioBlob);
+    fileReader.onloadend = function () {
+      const base64String = fileReader.result;
+
+      socket.emit(socketEventEnum.voice, {
+        userId: userDetails?._id,
+        roomId: roomDetails?._id,
+        audio: base64String,
+      });
+    };
+
+    try {
+      if (mediaRecorder && mediaRecorder.start) {
+        mediaRecorder.start();
+
+        setTimeout(
+          () => (mediaRecorder?.stop ? mediaRecorder.stop() : ""),
+          900
+        );
+      }
+    } catch (err) {
+      // nothing
+    }
+  };
+
+  const startRecording = async () => {
+    if (!stream) {
+      toast.error("Stream not found to start recording!");
+      console.log("🔴Stream not present to start recording");
+      return;
+    }
+
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.start();
+
+    mediaRecorder.addEventListener(
+      "dataavailable",
+      handleRecorderDataAvailable
+    );
+    mediaRecorder.addEventListener("stop", handleRecorderStop);
+
+    setTimeout(() => mediaRecorder.stop(), 1000);
+  };
+
+  const stopRecording = () => {
+    try {
+      if (mediaRecorder && mediaRecorder.stop) mediaRecorder.stop();
+
+      mediaRecorder.removeEventListener(
+        "dataavailable",
+        handleRecorderDataAvailable
+      );
+      mediaRecorder.removeEventListener("stop", handleRecorderStop);
+
+      mediaRecorder = undefined;
+    } catch (err) {
+      console.log("Error stopping recorder");
+    }
+  };
+
+  const handleMicToggle = () => {
+    if (stream) debounce(turnMicOff, 500);
+    else debounce(turnMicOn, 500);
+  };
+
+  const handleChatSoundToggle = () => {
+    if (chatSoundEnabled) {
+      turnMicOff();
+    }
+
+    chatSoundEnabled = !chatSoundEnabled;
+    setDummyState((prev) => prev + 1);
+  };
+
   const sendHeartbeat = () => {
     if (socket) {
       console.log("❤️ heartbeat");
@@ -777,6 +921,10 @@ function Player({ socket }) {
             setDummyState((prev) => prev + 1);
           }}
           onClearChatCLick={handleClearChats}
+          micOn={stream ? true : false}
+          onMicToggle={handleMicToggle}
+          chatSoundEnabled={chatSoundEnabled}
+          toggleChatSound={handleChatSoundToggle}
         />
       )}
       <div className={styles.inactiveOverlay} />

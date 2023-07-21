@@ -3,7 +3,11 @@ import { useSelector } from "react-redux";
 import {
   ArrowDown,
   ArrowUp,
+  Bell,
+  BellOff,
   Headphones,
+  Mic,
+  MicOff,
   Send,
   Shuffle,
   Volume2,
@@ -16,6 +20,7 @@ import { toast } from "react-hot-toast";
 import Modal from "Components/Modal/Modal";
 import InputSelect from "Components/InputControl/InputSelect/InputSelect";
 import Button from "Components/Button/Button";
+import Spinner from "Components/Spinner/Spinner";
 
 import { dragIcon, pauseIcon, playIcon } from "utils/svgs";
 import { getTimeFormatted } from "utils/util";
@@ -28,7 +33,6 @@ import {
 } from "apis/room";
 
 import styles from "./PlayerDetailsModal.module.scss";
-import Spinner from "Components/Spinner/Spinner";
 
 function PlayerDetailsModal({
   onClose,
@@ -46,6 +50,10 @@ function PlayerDetailsModal({
   chatNotificationMuted,
   toggleChatNotificationMute,
   onClearChatCLick,
+  micOn = false,
+  onMicToggle,
+  chatSoundEnabled,
+  toggleChatSound,
 }) {
   const messagesRef = useRef();
   const tabsEnum = {
@@ -62,6 +70,11 @@ function PlayerDetailsModal({
   const [playlist, setPlaylist] = useState(roomDetails.playlist || []);
   const [inputMessage, setInputMessage] = useState("");
   const [updatingAccessForUser, setUpdatingAccessForUser] = useState("");
+
+  const userRole = Array.isArray(roomDetails.users)
+    ? roomDetails.users.find((item) => item._id == userDetails._id)?.role ||
+      roomUserTypeEnum.member
+    : roomUserTypeEnum.member;
 
   const handleDragEnd = (dragObj) => {
     const si = dragObj.source?.index;
@@ -146,13 +159,17 @@ function PlayerDetailsModal({
     setPlaylist(roomDetails.playlist);
   }, [roomDetails.playlist]);
 
-  const userRole = Array.isArray(roomDetails.users)
-    ? roomDetails.users.find((item) => item._id == userDetails._id)?.role ||
-      roomUserTypeEnum.member
-    : roomUserTypeEnum.member;
+  useEffect(() => {
+    if (
+      micOn &&
+      ![roomUserTypeEnum.admin, roomUserTypeEnum.owner].includes(userRole)
+    ) {
+      onMicToggle();
+    }
+  }, [userRole]);
 
-  const musicBar = (
-    <div className={styles.musicBar}>
+  const musicBar = (playing = true) => (
+    <div className={`${styles.musicBar} ${playing ? styles.playingBars : ""}`}>
       <span />
       <span />
       <span />
@@ -237,7 +254,7 @@ function PlayerDetailsModal({
                               <div className={styles.top}>
                                 <span>
                                   {roomDetails.currentSong == item._id ? (
-                                    musicBar
+                                    musicBar(!roomDetails.paused)
                                   ) : (
                                     <Headphones />
                                   )}
@@ -267,83 +284,8 @@ function PlayerDetailsModal({
         </Droppable>
       </DragDropContext>
     ),
-    [playlist, roomDetails.currentSong]
+    [playlist, roomDetails.currentSong, roomDetails.paused]
   );
-
-  // const playlistDivWithoutDnd = useMemo(
-  //   () => (
-  //     <div className={styles.playlist}>
-  //       <InputSelect
-  //         label="Add new song"
-  //         placeholder="Select song"
-  //         value=""
-  //         options={allSongs
-  //           .filter(
-  //             (item) => !roomDetails.playlist.some((s) => s._id == item._id)
-  //           )
-  //           .map((item) => ({
-  //             value: item._id,
-  //             label: item.title,
-  //           }))}
-  //         onChange={(song) => (onAddNewSong ? onAddNewSong(song.value) : "")}
-  //       />
-
-  //       {Array.isArray(roomDetails.playlist)
-  //         ? playlist.map((item, i) => (
-  //             <div
-  //               className={`${styles.song} ${
-  //                 roomDetails.currentSong == item._id ? styles.playing : ""
-  //               }`}
-  //               key={item._id}
-  //             >
-  //               <div className={styles.left}>
-  //                 <div className={styles.drag}>{dragIcon}</div>
-
-  //                 <div
-  //                   className={styles.play}
-  //                   onClick={() =>
-  //                     onToggleCurrentSong && onPlayNewSong
-  //                       ? roomDetails.currentSong == item._id
-  //                         ? onToggleCurrentSong()
-  //                         : onPlayNewSong(item._id)
-  //                       : ""
-  //                   }
-  //                 >
-  //                   {roomDetails.currentSong == item._id
-  //                     ? roomDetails.paused
-  //                       ? playIcon
-  //                       : pauseIcon
-  //                     : playIcon}
-  //                 </div>
-
-  //                 <div className={styles.details}>
-  //                   <p className={styles.title}>
-  //                     <span>
-  //                       {roomDetails.currentSong == item._id ? (
-  //                         musicBar
-  //                       ) : (
-  //                         <Headphones />
-  //                       )}
-  //                     </span>
-  //                     {item.title}
-  //                   </p>
-
-  //                   <p className={styles.desc}>{item.artist}</p>
-  //                 </div>
-  //               </div>
-  //               <div
-  //                 className={`icon ${styles.deleteIcon}`}
-  //                 onClick={() => (onDeleteSong ? onDeleteSong(item._id) : "")}
-  //               >
-  //                 <X />
-  //               </div>
-  //             </div>
-  //           ))
-  //         : ""}
-  //     </div>
-  //   ),
-  //   [playlist, roomDetails.currentSong]
-  // );
 
   const usersDiv = (
     <div className={styles.users}>
@@ -463,18 +405,43 @@ function PlayerDetailsModal({
         <div className={styles.messagesOuter}>
           {roomDetails.chats?.length ? (
             <div className={styles.chatToolbar}>
+              {userRole == roomUserTypeEnum.admin ||
+              userRole == roomUserTypeEnum.owner ? (
+                <>
+                  <Button
+                    onClick={() => (toggleChatSound ? toggleChatSound() : "")}
+                    outlineButton={!chatSoundEnabled}
+                  >
+                    {chatSoundEnabled ? <Volume2 /> : <VolumeX />}
+                    {chatSoundEnabled ? "Sound" : "Muted"}
+                  </Button>
+
+                  {chatSoundEnabled && (
+                    <Button
+                      onClick={() => (onMicToggle ? onMicToggle() : "")}
+                      outlineButton={!micOn}
+                    >
+                      {micOn ? <Mic /> : <MicOff />}
+                      {micOn ? "ON" : "OFF"}
+                    </Button>
+                  )}
+                </>
+              ) : (
+                ""
+              )}
+
               <Button
                 onClick={() =>
                   toggleChatNotificationMute ? toggleChatNotificationMute() : ""
                 }
+                outlineButton={chatNotificationMuted}
               >
-                {chatNotificationMuted ? <VolumeX /> : <Volume2 />}
-                {chatNotificationMuted ? "Muted" : "Sound"}
+                {chatNotificationMuted ? <BellOff /> : <Bell />}
               </Button>
 
               {userRole == roomUserTypeEnum.owner ||
               userRole == roomUserTypeEnum.admin ? (
-                <Button onClick={onClearChatCLick} outlineButton>
+                <Button onClick={onClearChatCLick} redButton>
                   <X />
                   Clear chats
                 </Button>
@@ -520,7 +487,14 @@ function PlayerDetailsModal({
         </div>
       </div>
     ),
-    [roomDetails.chats, inputMessage, chatNotificationMuted]
+    [
+      roomDetails.chats,
+      inputMessage,
+      chatNotificationMuted,
+      micOn,
+      chatSoundEnabled,
+      userRole,
+    ]
   );
 
   const activityDiv = (
@@ -542,8 +516,6 @@ function PlayerDetailsModal({
       )}
     </div>
   );
-
-  // console.log("room", roomDetails);
 
   return (
     <Modal onClose={onClose}>
