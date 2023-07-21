@@ -331,7 +331,6 @@ function Player({ socket }) {
       if (!data?.audio || !data?.userId) return;
 
       const { audio, userId } = data;
-      console.log(audio);
 
       if (!audio || !chatSoundEnabled) return;
       const audioElem = new Audio(audio);
