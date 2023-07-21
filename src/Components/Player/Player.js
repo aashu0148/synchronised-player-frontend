@@ -61,7 +61,8 @@ DB.version(1).stores({
 let stream,
   mediaRecorder,
   audioChunks = [],
-  chatSoundEnabled = false;
+  chatSoundEnabled = false,
+  lastVoiceReceivedAt;
 
 let debounceTimeout,
   bufferCheckingInterval,
@@ -261,6 +262,8 @@ function Player({ socket }) {
   };
 
   const handleLeaveRoomClick = () => {
+    if (chatSoundEnabled && stream) handleMicToggle();
+
     socket.emit("leave-room", {
       roomId: roomDetails._id,
       userId: userDetails._id,
@@ -330,9 +333,16 @@ function Player({ socket }) {
     socket.on(socketEventEnum.voice, (data) => {
       if (!data?.audio || !data?.userId) return;
 
-      const { audio, userId } = data;
+      const { audio, userId, timestamp } = data;
 
-      if (!audio || !chatSoundEnabled) return;
+      if (
+        !audio ||
+        !chatSoundEnabled ||
+        (lastVoiceReceivedAt && timestamp < lastVoiceReceivedAt)
+      )
+        return;
+
+      lastVoiceReceivedAt = timestamp;
       const audioElem = new Audio(audio);
 
       audioElem.play();
