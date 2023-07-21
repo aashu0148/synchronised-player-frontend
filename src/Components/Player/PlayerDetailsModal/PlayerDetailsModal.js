@@ -413,7 +413,7 @@ function PlayerDetailsModal({
                     outlineButton={!chatSoundEnabled}
                   >
                     {chatSoundEnabled ? <Volume2 /> : <VolumeX />}
-                    {chatSoundEnabled ? "Sound" : "Muted"}
+                    {isMobileView ? "" : chatSoundEnabled ? "Sound" : "Muted"}
                   </Button>
 
                   {chatSoundEnabled && (
@@ -422,7 +422,7 @@ function PlayerDetailsModal({
                       outlineButton={!micOn}
                     >
                       {micOn ? <Mic /> : <MicOff />}
-                      {micOn ? "ON" : "OFF"}
+                      {isMobileView ? "" : micOn ? "ON" : "OFF"}
                     </Button>
                   )}
                 </>
