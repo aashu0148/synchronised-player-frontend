@@ -34,6 +34,7 @@ import {
 import { getAllSongs } from "apis/song";
 import { sayHiToBackend } from "apis/user";
 import { getCurrentRoom } from "apis/room";
+import { roomUserTypeEnum } from "utils/constants";
 
 import styles from "./Player.module.scss";
 
@@ -62,7 +63,8 @@ let stream,
   mediaRecorder,
   audioChunks = [],
   chatSoundEnabled = false,
-  lastVoiceReceivedAt;
+  lastVoiceReceivedAt,
+  userRole;
 
 let debounceTimeout,
   bufferCheckingInterval,
@@ -338,7 +340,8 @@ function Player({ socket }) {
       if (
         !audio ||
         !chatSoundEnabled ||
-        (lastVoiceReceivedAt && timestamp < lastVoiceReceivedAt)
+        (lastVoiceReceivedAt && timestamp < lastVoiceReceivedAt) ||
+        ![roomUserTypeEnum.admin, roomUserTypeEnum.owner].includes(userRole)
       )
         return;
 
@@ -701,6 +704,7 @@ function Player({ socket }) {
 
   const handleRecorderStop = () => {
     const audioBlob = new Blob(audioChunks);
+
     audioChunks = [];
     const fileReader = new FileReader();
     fileReader.readAsDataURL(audioBlob);
@@ -720,7 +724,7 @@ function Player({ socket }) {
 
         setTimeout(
           () => (mediaRecorder?.stop ? mediaRecorder.stop() : ""),
-          900
+          400
         );
       }
     } catch (err) {
@@ -744,7 +748,7 @@ function Player({ socket }) {
     );
     mediaRecorder.addEventListener("stop", handleRecorderStop);
 
-    setTimeout(() => mediaRecorder.stop(), 1000);
+    setTimeout(() => mediaRecorder.stop(), 300);
   };
 
   const stopRecording = () => {
@@ -792,14 +796,24 @@ function Player({ socket }) {
   };
 
   useEffect(() => {
-    globalCurrentRoomId = roomDetails._id;
     if (isFirstRender) return;
 
     updateAudioElementWithControls(roomDetails);
   }, [roomDetails.currentSong, roomDetails.secondsPlayed, roomDetails.paused]);
 
   useEffect(() => {
+    globalCurrentRoomId = roomDetails._id;
+
+    chatSoundEnabled = true;
+  }, [roomDetails._id]);
+
+  useEffect(() => {
     globalCurrentRoomUsersLength = roomDetails?.users?.length || 0;
+
+    userRole = Array.isArray(roomDetails.users)
+      ? roomDetails.users.find((item) => item._id == userDetails._id)?.role ||
+        roomUserTypeEnum.member
+      : roomUserTypeEnum.member;
   }, [roomDetails.users]);
 
   useEffect(() => {
