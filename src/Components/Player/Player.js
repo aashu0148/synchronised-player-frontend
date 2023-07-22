@@ -857,6 +857,7 @@ function Player({ socket }) {
 
   useEffect(() => {
     handleSocketEvents();
+    console.log("🟡Socket changed", socket);
 
     if (heartbeatInterval) {
       clearInterval(heartbeatInterval);
