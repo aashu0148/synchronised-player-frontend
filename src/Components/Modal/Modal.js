@@ -105,7 +105,7 @@ function Modal({
         )}
         {props.children}
 
-        {fullScreenInMobile && (
+        {/* {fullScreenInMobile && (
           <div className={styles.controls}>
             <div
               className={`icon ${styles.icon}`}
@@ -114,7 +114,7 @@ function Modal({
               <ArrowLeft />
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   ) : (
