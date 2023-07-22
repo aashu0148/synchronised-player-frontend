@@ -256,19 +256,30 @@ export const getTimeDurationFromSeconds = (totalSeconds = 0) => {
 export const getSongUrlFromBackupStorage = (url) => {
   if (!url) return { success: false, url: "" };
 
-  const backupBucket1 = "sleeping-owl-music-3";
-  // const backupBucket2 = "sleeping-owl-music-4";
+  const backupBucketsMap = {
+    "sleeping-owl-music": "sleeping-owl-music-3",
+    "sleeping-owl-music-2": "sleeping-owl-music-3",
+    "sleeping-owl-storage-1": "sleeping-owl-backup-1",
+    "sleeping-owl-storage-2": "sleeping-owl-backup-2",
+  };
 
-  if (url.includes(backupBucket1)) return { success: false, url: "" };
+  const backupBuckets = Object.values(backupBucketsMap);
 
-  const sleepingOwlIndex = url.indexOf("sleeping-owl-music");
+  if (backupBuckets.some((item) => url.includes(item)))
+    return { success: false, url: "" };
+
+  const sleepingOwlIndex = url.indexOf("sleeping-owl-");
   const appspotIndex = url.indexOf(".appspot.com/");
 
-  if (sleepingOwlIndex < 0 || appspotIndex < 0)
+  const currBucket = url.slice(sleepingOwlIndex, appspotIndex);
+
+  if (sleepingOwlIndex < 0 || appspotIndex < 0 || !backupBucketsMap[currBucket])
     return { success: false, url: "" };
 
   const newUrl =
-    url.slice(0, sleepingOwlIndex) + backupBucket1 + url.slice(appspotIndex);
+    url.slice(0, sleepingOwlIndex) +
+    backupBucketsMap[currBucket] +
+    url.slice(appspotIndex);
 
   return { success: true, url: newUrl };
 };

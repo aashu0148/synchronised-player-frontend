@@ -1,26 +1,41 @@
-const getFileDownloadLinksFromSpotifyDown = async (playlistId, offset = 0) => {
+const getFileDownloadLinksFromSpotifyDown = async (
+  playlistId,
+  maxFiles = 500
+) => {
   if (!playlistId) {
     console.log(`🔴Playlist Id required`);
     return;
   }
 
   console.log(`🟡Getting all the track list`);
-  const trackListRes = await (
-    await fetch(
-      `https://api.spotifydown.com/trackList/playlist/${playlistId}?offset=${offset}`
-    )
-  ).json();
-  if (!trackListRes.success) {
-    console.log(`🔴Error getting trackLists`, trackListRes);
-    return;
-  }
+  const allSongsData = [];
 
-  const allSongsData = trackListRes.trackList;
+  for (let i = 0; i < maxFiles; i += 100) {
+    const tempRes = await (
+      await fetch(
+        `https://api.spotifydown.com/trackList/playlist/${playlistId}?offset=${i}`
+      )
+    ).json();
+    if (!tempRes.success) {
+      console.log(`🔴Error getting trackLists`, tempRes);
+      continue;
+    }
+
+    const trackList = Array.isArray(tempRes?.trackList)
+      ? tempRes.trackList
+      : [];
+    if (trackList?.length < 50) i = maxFiles;
+
+    allSongsData.push(...trackList);
+  }
 
   const filesWithLinks = [];
 
   for (let i = 0; i < allSongsData.length; ++i) {
     console.log(`🟡Getting link for file:${i + 1}/${allSongsData.length}`);
+
+    if (filesWithLinks.length && filesWithLinks.length % 50 == 0)
+      console.log(`🟡 Files collected till now`, filesWithLinks);
 
     const file = allSongsData[i];
     let res;
