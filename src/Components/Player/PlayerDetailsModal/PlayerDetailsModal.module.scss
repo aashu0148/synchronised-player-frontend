@@ -744,6 +744,20 @@
         font-size: 16px;
       }
 
+      .messagesOuter {
+        .chatToolbar {
+          top: -1px;
+          padding: 6px 10px;
+
+          button {
+            svg {
+              height: 16px;
+              width: 16px;
+            }
+          }
+        }
+      }
+
       .messages {
         .message {
           gap: 10px;

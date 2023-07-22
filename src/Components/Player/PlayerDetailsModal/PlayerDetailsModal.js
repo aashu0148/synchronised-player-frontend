@@ -518,7 +518,7 @@ function PlayerDetailsModal({
   );
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onClose={onClose} fullScreenInMobile>
       <div className={styles.container}>
         <div className={styles.roomInfo}>
           <p className={styles.label}>You are listening in:</p>
