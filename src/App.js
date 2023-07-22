@@ -20,8 +20,10 @@ import "styles/global.scss";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 let socket;
+let globalRoomId;
 function App() {
   const userDetails = useSelector((state) => state.root.user);
+  const roomDetails = useSelector((state) => state.root.room);
   const dispatch = useDispatch();
 
   const [_dummyState, setDummyState] = useState(0);
@@ -72,6 +74,16 @@ function App() {
       }, 3000);
 
       console.log("🔵 Socket connected");
+
+      if (globalRoomId) {
+        console.log("🟡re-joining room after re-connect");
+
+        socket.emit("join-room", {
+          roomId: globalRoomId,
+          userId: userDetails._id,
+          ...userDetails,
+        });
+      }
     });
 
     socket.on("disconnect", () => {
@@ -118,6 +130,10 @@ function App() {
       if (socket?.disconnect) socket.disconnect();
     };
   }, [userDetails._id]);
+
+  useEffect(() => {
+    globalRoomId = roomDetails?._id;
+  }, [roomDetails?._id]);
 
   useEffect(() => {
     handleUserDetection();

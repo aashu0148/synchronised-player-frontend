@@ -300,7 +300,6 @@ function Player({ socket }) {
     });
 
     socket.on(socketEventEnum.next, (data) => {
-      console.log("received next event", data);
       if (audioElemRef.current) audioElemRef.current.currentTime = 0;
 
       dispatch({ type: actionTypes.UPDATE_ROOM, room: data });
@@ -857,7 +856,6 @@ function Player({ socket }) {
 
   useEffect(() => {
     handleSocketEvents();
-    console.log("🟡Socket changed", socket);
 
     if (heartbeatInterval) {
       clearInterval(heartbeatInterval);
