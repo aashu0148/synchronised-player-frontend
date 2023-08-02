@@ -80,6 +80,7 @@ function PlayerDetailsModal({
   const defaultSongs = allSongs
     .filter((item) => !roomDetails.playlist.some((s) => s._id == item._id))
     .map((item) => ({
+      ...item,
       value: item._id,
       label: item.title,
       artist: item.artist,
@@ -164,6 +165,7 @@ function PlayerDetailsModal({
       const songs = songsRes.data
         .filter((item) => !roomDetails.playlist.some((s) => s._id == item._id))
         .map((item) => ({
+          ...item,
           value: item._id,
           label: item.title,
           artist: item.artist,
@@ -234,9 +236,7 @@ function PlayerDetailsModal({
                   placeholder="Search a song"
                   value=""
                   defaultOptions={defaultSongs}
-                  onChange={(song) =>
-                    onAddNewSong ? onAddNewSong(song.value) : ""
-                  }
+                  onChange={(song) => (onAddNewSong ? onAddNewSong(song) : "")}
                 />
 
                 <Button className={styles.shuffle} onClick={onShufflePlaylist}>

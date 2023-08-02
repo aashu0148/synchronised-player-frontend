@@ -168,10 +168,8 @@ function Player({ socket }) {
     setIsBuffering(true);
   };
 
-  const handleAddSong = (songId) => {
-    if (!songId) return;
-    const song = availableSongs.find((item) => item._id == songId);
-    if (!song) return;
+  const handleAddSong = (song) => {
+    if (!song?._id || !song?.url) return;
 
     console.log("🟡add-song event emitted");
     socket.emit(socketEventEnum.addSong, {
