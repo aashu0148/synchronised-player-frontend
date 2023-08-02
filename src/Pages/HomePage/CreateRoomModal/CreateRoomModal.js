@@ -7,7 +7,7 @@ import Modal from "Components/Modal/Modal";
 import InputControl from "Components/InputControl/InputControl";
 import InputSelect from "Components/InputControl/InputSelect/InputSelect";
 
-import { getAllSongs } from "apis/song";
+import { getAllSongs, searchSong } from "apis/song";
 import { createRoom } from "apis/room";
 
 import styles from "./CreateRoomModal.module.scss";
@@ -22,6 +22,13 @@ function CreateRoomModal({ onClose, onSuccess }) {
   const [allSongs, setAllSongs] = useState([]);
   const [selectedSongs, setSelectedSongs] = useState([]);
   const [submitButtonDisabled, setSubmitButtonDisabled] = useState(false);
+
+  const defaultSongs = allSongs
+    .filter((item) => !selectedSongs.some((s) => s.value == item._id))
+    .map((item) => ({
+      value: item._id,
+      label: item.title,
+    }));
 
   const fetchAllSongs = async () => {
     const res = await getAllSongs();
@@ -43,6 +50,26 @@ function CreateRoomModal({ onClose, onSuccess }) {
       setErrors({});
       return true;
     }
+  };
+
+  const handleLoadOptions = (query) => {
+    if (!query || !query.trim()) {
+      return defaultSongs;
+    }
+
+    return new Promise(async (resolve) => {
+      const songsRes = await searchSong(query);
+      if (!songsRes || !songsRes?.data?.length) return [];
+
+      const songs = songsRes.data
+        .filter((item) => !selectedSongs.some((s) => s.value == item._id))
+        .map((item) => ({
+          value: item._id,
+          label: item.title,
+          artist: item.artist,
+        }));
+      resolve(songs);
+    });
   };
 
   const handleSubmission = async () => {
@@ -84,15 +111,12 @@ function CreateRoomModal({ onClose, onSuccess }) {
           />
 
           <InputSelect
+            async
+            loadOptions={handleLoadOptions}
             label="Playlist"
-            placeholder="Select songs"
-            value={""}
-            options={allSongs
-              .filter((item) => !selectedSongs.some((s) => s.value == item._id))
-              .map((item) => ({
-                value: item._id,
-                label: item.title,
-              }))}
+            placeholder="Search a song"
+            value=""
+            defaultOptions={defaultSongs}
             onChange={(song) => setSelectedSongs((prev) => [...prev, song])}
           />
 

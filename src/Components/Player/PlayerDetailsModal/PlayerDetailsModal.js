@@ -31,6 +31,7 @@ import {
   promoteToAdmin,
   promoteToController,
 } from "apis/room";
+import { searchSong } from "apis/song";
 
 import styles from "./PlayerDetailsModal.module.scss";
 
@@ -75,6 +76,13 @@ function PlayerDetailsModal({
     ? roomDetails.users.find((item) => item._id == userDetails._id)?.role ||
       roomUserTypeEnum.member
     : roomUserTypeEnum.member;
+  const defaultSongs = allSongs
+    .filter((item) => !roomDetails.playlist.some((s) => s._id == item._id))
+    .map((item) => ({
+      value: item._id,
+      label: item.title,
+      artist: item.artist,
+    }));
 
   const handleDragEnd = (dragObj) => {
     const si = dragObj.source?.index;
@@ -130,6 +138,26 @@ function PlayerDetailsModal({
     if (!res) return;
 
     toast.success(res?.data?.message || "Access updated");
+  };
+
+  const handleLoadOptions = (query) => {
+    if (!query || !query.trim()) {
+      return defaultSongs;
+    }
+
+    return new Promise(async (resolve) => {
+      const songsRes = await searchSong(query);
+      if (!songsRes || !songsRes?.data?.length) return [];
+
+      const songs = songsRes.data
+        .filter((item) => !roomDetails.playlist.some((s) => s._id == item._id))
+        .map((item) => ({
+          value: item._id,
+          label: item.title,
+          artist: item.artist,
+        }));
+      resolve(songs);
+    });
   };
 
   useEffect(() => {
@@ -188,18 +216,12 @@ function PlayerDetailsModal({
             >
               <div className="row" style={{ alignItems: "flex-end" }}>
                 <InputSelect
+                  async
+                  loadOptions={handleLoadOptions}
                   label="Add new song"
-                  placeholder="Select song"
+                  placeholder="Search a song"
                   value=""
-                  options={allSongs
-                    .filter(
-                      (item) =>
-                        !roomDetails.playlist.some((s) => s._id == item._id)
-                    )
-                    .map((item) => ({
-                      value: item._id,
-                      label: item.title,
-                    }))}
+                  defaultOptions={defaultSongs}
                   onChange={(song) =>
                     onAddNewSong ? onAddNewSong(song.value) : ""
                   }

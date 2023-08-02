@@ -1,5 +1,27 @@
 import { errorToastLogger, fetchWrapper } from "utils/util";
 
+export const searchSong = async (query) => {
+  const reqPath = `/song?search=${query}`;
+  let response;
+
+  try {
+    response = await fetchWrapper(reqPath);
+    const data = await response.json();
+    if (!data?.success) {
+      errorToastLogger(
+        "searchSong",
+        data?.message || "Failed to search song",
+        data?.error
+      );
+      return false;
+    }
+    return data;
+  } catch (err) {
+    errorToastLogger("searchSong", "Failed to search song", err);
+    return false;
+  }
+};
+
 export const getAllSongs = async () => {
   const reqPath = `/song/all`;
   let response;
