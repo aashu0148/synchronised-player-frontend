@@ -8,21 +8,25 @@ import InputControl from "Components/InputControl/InputControl";
 import InputSelect from "Components/InputControl/InputSelect/InputSelect";
 
 import { getAllSongs, searchSong } from "apis/song";
-import { createRoom } from "apis/room";
+import { createRoom, createRoomWithRandomSongs } from "apis/room";
 
 import styles from "./CreateRoomModal.module.scss";
+import Toggle from "Components/Toggle/Toggle";
 
 let debounceTimeout;
 function CreateRoomModal({ onClose, onSuccess }) {
   const [values, setValues] = useState({
     name: "",
+    totalSongs: "",
   });
   const [errors, setErrors] = useState({
     name: "",
+    totalSongs: "",
   });
   const [allSongs, setAllSongs] = useState([]);
   const [selectedSongs, setSelectedSongs] = useState([]);
   const [submitButtonDisabled, setSubmitButtonDisabled] = useState(false);
+  const [isRoomWithRandomSongs, setIsRoomWithRandomSongs] = useState(true);
 
   const defaultSongs = allSongs
     .filter((item) => !selectedSongs.some((s) => s.value == item._id))
@@ -50,7 +54,10 @@ function CreateRoomModal({ onClose, onSuccess }) {
     let errors = {};
 
     if (!values.name || !values.name.trim()) errors.name = "Name required";
-    if (!selectedSongs.length) errors.songs = "select some songs to continue";
+    if (!selectedSongs.length && !isRoomWithRandomSongs)
+      errors.songs = "select some songs to continue";
+    if (!values.totalSongs && isRoomWithRandomSongs)
+      errors.totalSongs = "enter number of songs";
 
     if (Object.keys(errors).length) {
       setErrors(errors);
@@ -88,12 +95,14 @@ function CreateRoomModal({ onClose, onSuccess }) {
     if (!validateForm()) return;
 
     const body = {
-      name: values.name,
+      ...values,
       playlist: selectedSongs.map((item) => item.value),
     };
 
     setSubmitButtonDisabled(true);
-    const res = await createRoom(body);
+    const res = isRoomWithRandomSongs
+      ? await createRoomWithRandomSongs(body)
+      : await createRoom(body);
     setSubmitButtonDisabled(false);
     if (!res) return;
 
@@ -122,34 +131,69 @@ function CreateRoomModal({ onClose, onSuccess }) {
             error={errors.name}
           />
 
-          <InputSelect
-            async
-            loadOptions={(...args) => debounce(handleLoadOptions, args)}
-            label="Playlist"
-            placeholder="Search a song"
-            value=""
-            defaultOptions={defaultSongs}
-            onChange={(song) => setSelectedSongs((prev) => [...prev, song])}
+          <Toggle
+            className={styles.toggle}
+            options={[
+              {
+                label: "Custom songs",
+                value: "custom",
+              },
+              {
+                label: "Random songs",
+                value: "random",
+              },
+            ]}
+            selected={isRoomWithRandomSongs ? "random" : "custom"}
+            onChange={(obj) => setIsRoomWithRandomSongs(obj.value == "random")}
           />
 
-          <div className={styles.songs}>
-            {selectedSongs.map((item) => (
-              <div key={item.value} className={styles.song}>
-                <p>{item.label}</p>
+          {isRoomWithRandomSongs ? (
+            <InputControl
+              label="No of songs in room"
+              placeholder="Enter number"
+              numericInput
+              max={200}
+              value={values.totalSongs}
+              onChange={(event) =>
+                setValues((prev) => ({
+                  ...prev,
+                  totalSongs: parseInt(event.target.value),
+                }))
+              }
+              error={errors.totalSongs}
+            />
+          ) : (
+            <InputSelect
+              async
+              loadOptions={(...args) => debounce(handleLoadOptions, args)}
+              label="Playlist"
+              placeholder="Search a song"
+              value=""
+              defaultOptions={defaultSongs}
+              onChange={(song) => setSelectedSongs((prev) => [...prev, song])}
+            />
+          )}
 
-                <div
-                  className={"icon"}
-                  onClick={() =>
-                    setSelectedSongs((prev) =>
-                      prev.filter((s) => s.value !== item.value)
-                    )
-                  }
-                >
-                  <X />
+          {!isRoomWithRandomSongs && (
+            <div className={styles.songs}>
+              {selectedSongs.map((item) => (
+                <div key={item.value} className={styles.song}>
+                  <p>{item.label}</p>
+
+                  <div
+                    className={"icon"}
+                    onClick={() =>
+                      setSelectedSongs((prev) =>
+                        prev.filter((s) => s.value !== item.value)
+                      )
+                    }
+                  >
+                    <X />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className={styles.footer}>

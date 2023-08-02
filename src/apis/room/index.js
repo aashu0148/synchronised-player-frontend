@@ -44,6 +44,32 @@ export const createRoom = async (values) => {
   }
 };
 
+export const createRoomWithRandomSongs = async (values) => {
+  const reqPath = `/room/random`;
+  let response;
+
+  try {
+    response = await fetchWrapper(reqPath, values);
+    const data = await response.json();
+    if (!data?.success) {
+      errorToastLogger(
+        "createRoomWithRandomSongs",
+        data?.message || "Failed to create new room",
+        data?.error
+      );
+      return false;
+    }
+    return data;
+  } catch (err) {
+    errorToastLogger(
+      "createRoomWithRandomSongs",
+      "Failed to create new room",
+      err
+    );
+    return false;
+  }
+};
+
 export const updateRoom = async (rid, values) => {
   const reqPath = `/room/${rid}`;
   let response;
