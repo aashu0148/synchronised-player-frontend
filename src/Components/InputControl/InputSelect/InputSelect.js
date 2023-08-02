@@ -11,6 +11,7 @@ function InputSelect({
   error,
   async,
   asyncCreatable,
+  components = {},
   ...rest
 }) {
   const colors = {
@@ -99,6 +100,7 @@ function InputSelect({
             components={{
               DropdownIndicator: () => null,
               IndicatorSeparator: () => null,
+              ...components,
             }}
             styles={customSelectStyle}
             error={error ? true : false}
@@ -109,6 +111,7 @@ function InputSelect({
             components={{
               DropdownIndicator: () => null,
               IndicatorSeparator: () => null,
+              ...components,
             }}
             styles={customSelectStyle}
             error={error ? true : false}
@@ -119,6 +122,7 @@ function InputSelect({
             components={{
               DropdownIndicator: () => null,
               IndicatorSeparator: () => null,
+              ...components,
             }}
             styles={customSelectStyle}
             error={error ? true : false}

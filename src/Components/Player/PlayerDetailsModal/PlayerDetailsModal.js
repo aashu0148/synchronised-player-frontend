@@ -156,7 +156,10 @@ function PlayerDetailsModal({
 
     return new Promise(async (resolve) => {
       const songsRes = await searchSong(query);
-      if (!songsRes || !songsRes?.data?.length) return [];
+      if (!songsRes || !songsRes?.data?.length) {
+        resolve([]);
+        return;
+      }
 
       const songs = songsRes.data
         .filter((item) => !roomDetails.playlist.some((s) => s._id == item._id))
