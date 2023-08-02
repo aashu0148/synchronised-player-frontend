@@ -35,6 +35,7 @@ import { searchSong } from "apis/song";
 
 import styles from "./PlayerDetailsModal.module.scss";
 
+let debounceTimeout;
 function PlayerDetailsModal({
   onClose,
   notifications = [],
@@ -83,6 +84,14 @@ function PlayerDetailsModal({
       label: item.title,
       artist: item.artist,
     }));
+
+  const debounce = (func, args, timer = 300) => {
+    clearTimeout(debounceTimeout);
+
+    return new Promise((resolve, reject) => {
+      debounceTimeout = setTimeout(() => resolve(func(...args)), timer);
+    });
+  };
 
   const handleDragEnd = (dragObj) => {
     const si = dragObj.source?.index;
@@ -217,7 +226,7 @@ function PlayerDetailsModal({
               <div className="row" style={{ alignItems: "flex-end" }}>
                 <InputSelect
                   async
-                  loadOptions={handleLoadOptions}
+                  loadOptions={(...args) => debounce(handleLoadOptions, args)}
                   label="Add new song"
                   placeholder="Search a song"
                   value=""

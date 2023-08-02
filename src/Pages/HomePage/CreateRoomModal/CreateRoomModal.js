@@ -12,6 +12,7 @@ import { createRoom } from "apis/room";
 
 import styles from "./CreateRoomModal.module.scss";
 
+let debounceTimeout;
 function CreateRoomModal({ onClose, onSuccess }) {
   const [values, setValues] = useState({
     name: "",
@@ -29,6 +30,14 @@ function CreateRoomModal({ onClose, onSuccess }) {
       value: item._id,
       label: item.title,
     }));
+
+  const debounce = (func, args, timer = 300) => {
+    clearTimeout(debounceTimeout);
+
+    return new Promise((resolve, reject) => {
+      debounceTimeout = setTimeout(() => resolve(func(...args)), timer);
+    });
+  };
 
   const fetchAllSongs = async () => {
     const res = await getAllSongs();
@@ -112,7 +121,7 @@ function CreateRoomModal({ onClose, onSuccess }) {
 
           <InputSelect
             async
-            loadOptions={handleLoadOptions}
+            loadOptions={(...args) => debounce(handleLoadOptions, args)}
             label="Playlist"
             placeholder="Search a song"
             value=""
