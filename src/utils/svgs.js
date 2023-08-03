@@ -29,13 +29,25 @@ export const dragIcon = (
 );
 
 export const telegramIcon = (
-  <svg fill="#f327a5" ariaHidden="true" viewBox="0 0 24 24">
+  <svg
+    height="24"
+    width="24"
+    fill="#f327a5"
+    ariaHidden="true"
+    viewBox="0 0 24 24"
+  >
     <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"></path>
   </svg>
 );
 
 export const playlistMusicIcon = (
-  <svg ariaHidden="true" viewBox="0 0 24 24">
+  <svg width="24" height="24" ariaHidden="true" viewBox="0 0 24 24">
     <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"></path>
+  </svg>
+);
+
+export const alphabeticalIcon = (
+  <svg ariaHidden="true" height="24" width="24" viewBox="0 0 24 24">
+    <path d="M14.94 4.66h-4.72l2.36-2.36zm-4.69 14.71h4.66l-2.33 2.33zM6.1 6.27 1.6 17.73h1.84l.92-2.45h5.11l.92 2.45h1.84L7.74 6.27H6.1zm-1.13 7.37 1.94-5.18 1.94 5.18H4.97zm10.76 2.5h6.12v1.59h-8.53v-1.29l5.92-8.56h-5.88v-1.6h8.3v1.26l-5.93 8.6z"></path>
   </svg>
 );

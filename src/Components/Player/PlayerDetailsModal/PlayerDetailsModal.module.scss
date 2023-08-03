@@ -171,6 +171,14 @@
     flex-direction: column;
     gap: 20px;
 
+    .buttons {
+      flex: 0;
+      width: fit-content;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
     .shuffle {
       padding: 8px 18px;
       gap: 8px;
@@ -178,6 +186,7 @@
       svg {
         height: 16px;
         width: 16px;
+        fill: $white;
       }
     }
 

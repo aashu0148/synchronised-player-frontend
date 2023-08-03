@@ -22,7 +22,13 @@ import InputSelect from "Components/InputControl/InputSelect/InputSelect";
 import Button from "Components/Button/Button";
 import Spinner from "Components/Spinner/Spinner";
 
-import { dragIcon, pauseIcon, playIcon, playlistMusicIcon } from "utils/svgs";
+import {
+  alphabeticalIcon,
+  dragIcon,
+  pauseIcon,
+  playIcon,
+  playlistMusicIcon,
+} from "utils/svgs";
 import { getTimeFormatted } from "utils/util";
 import { roomUserTypeEnum } from "utils/constants";
 import {
@@ -246,10 +252,25 @@ function PlayerDetailsModal({
                   onChange={(song) => (onAddNewSong ? onAddNewSong(song) : "")}
                 />
 
-                <Button className={styles.shuffle} onClick={onShufflePlaylist}>
-                  <Shuffle />
-                  Shuffle
-                </Button>
+                <div className={styles.buttons}>
+                  <Button
+                    className={styles.shuffle}
+                    onClick={() =>
+                      onShufflePlaylist ? onShufflePlaylist(true) : ""
+                    }
+                  >
+                    {alphabeticalIcon}
+                    Alphabetical
+                  </Button>
+
+                  <Button
+                    className={styles.shuffle}
+                    onClick={onShufflePlaylist}
+                  >
+                    <Shuffle />
+                    Shuffle
+                  </Button>
+                </div>
               </div>
 
               {Array.isArray(roomDetails.playlist)

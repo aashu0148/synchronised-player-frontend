@@ -247,10 +247,14 @@ function Player({ socket }) {
     });
   };
 
-  const handleShufflePlaylist = () => {
-    const newSongIds = shuffleArray(roomDetails.playlist).map(
-      (item) => item._id
-    );
+  const handleShufflePlaylist = (alphabeticalOrder = false) => {
+    const newSongIds = alphabeticalOrder
+      ? [...roomDetails.playlist]
+          .sort((a, b) =>
+            a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1
+          )
+          .map((item) => item._id)
+      : shuffleArray(roomDetails.playlist).map((item) => item._id);
 
     console.log(`🟡${socketEventEnum.updatePlaylist} event emitted to shuffle`);
     socket.emit(socketEventEnum.updatePlaylist, {
