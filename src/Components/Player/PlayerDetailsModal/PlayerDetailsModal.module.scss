@@ -171,22 +171,60 @@
     flex-direction: column;
     gap: 20px;
 
-    .buttons {
-      flex: 0;
-      width: fit-content;
+    .controls {
       display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+      flex-direction: column;
+      gap: 15px;
 
-    .shuffle {
-      padding: 8px 18px;
-      gap: 8px;
+      .top {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
 
-      svg {
-        height: 16px;
-        width: 16px;
-        fill: $white;
+        & > div {
+          flex: 1;
+        }
+
+        .buttons {
+          flex: 0;
+          width: fit-content;
+          display: flex;
+          gap: 8px;
+          align-items: center;
+        }
+
+        .shuffle {
+          padding: 8px 18px;
+          gap: 8px;
+
+          svg {
+            height: 16px;
+            width: 16px;
+            fill: $white;
+          }
+        }
+      }
+
+      .bottom {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+
+        .inputContainer {
+          border-color: $white-2;
+
+          &:hover {
+            border-color: $gray;
+          }
+
+          &:focus-within {
+            border-color: $primary;
+          }
+
+          input {
+            height: 35px;
+          }
+        }
       }
     }
 
@@ -235,12 +273,18 @@
           flex-direction: column;
           gap: 2px;
 
+          .highlight {
+            color: $black;
+            background-color: yellow;
+            display: inline;
+          }
+
           .top {
             display: flex;
             gap: 5px;
             align-items: center;
 
-            span {
+            .fit {
               display: flex;
               align-items: center;
             }
@@ -666,6 +710,19 @@
     .playlist {
       padding-bottom: 30px;
       gap: 15px;
+
+      .controls {
+        .top {
+          flex-direction: column;
+          gap: 5px;
+        }
+
+        .bottom {
+          display: flex;
+          gap: 5px;
+          align-items: center;
+        }
+      }
 
       .song {
         gap: 12px;

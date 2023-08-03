@@ -21,6 +21,8 @@ import Modal from "Components/Modal/Modal";
 import InputSelect from "Components/InputControl/InputSelect/InputSelect";
 import Button from "Components/Button/Button";
 import Spinner from "Components/Spinner/Spinner";
+import InputControl from "Components/InputControl/InputControl";
+import UserRoomsModal from "./UserRoomsModal/UserRoomsModal";
 
 import {
   alphabeticalIcon,
@@ -40,7 +42,6 @@ import {
 import { searchSong } from "apis/song";
 
 import styles from "./PlayerDetailsModal.module.scss";
-import UserRoomsModal from "./UserRoomsModal/UserRoomsModal";
 
 let debounceTimeout;
 function PlayerDetailsModal({
@@ -80,6 +81,7 @@ function PlayerDetailsModal({
   const [activeTab, setActiveTab] = useState(tabsEnum.playlist);
   const [playlist, setPlaylist] = useState(roomDetails.playlist || []);
   const [inputMessage, setInputMessage] = useState("");
+  const [inputKeyword, setInputKeyword] = useState("");
   const [updatingAccessForUser, setUpdatingAccessForUser] = useState("");
   const [selectedSongForUserRooms, setSelectedSongForUserRooms] = useState("");
 
@@ -187,6 +189,23 @@ function PlayerDetailsModal({
     });
   };
 
+  const returnPTagHighlighted = (text, className, keyword = "") => {
+    if (!keyword) return <p className={className}>{text}</p>;
+
+    const arr = text.split(new RegExp(keyword, "i"));
+
+    return (
+      <p
+        className={className}
+        dangerouslySetInnerHTML={{
+          __html: arr
+            .map((item) => item)
+            .join(`<span class=${styles.highlight}>${keyword}</span>`),
+        }}
+      ></p>
+    );
+  };
+
   useEffect(() => {
     if (chatUnreadCount > 0) setActiveTab(tabsEnum.chat);
 
@@ -241,35 +260,50 @@ function PlayerDetailsModal({
               {...provided.droppableProps}
               ref={provided.innerRef}
             >
-              <div className="row" style={{ alignItems: "flex-end" }}>
-                <InputSelect
-                  async
-                  loadOptions={(...args) => debounce(handleLoadOptions, args)}
-                  label="Add new song"
-                  placeholder="Search a song"
-                  value=""
-                  defaultOptions={defaultSongs}
-                  onChange={(song) => (onAddNewSong ? onAddNewSong(song) : "")}
-                />
-
-                <div className={styles.buttons}>
-                  <Button
-                    className={styles.shuffle}
-                    onClick={() =>
-                      onShufflePlaylist ? onShufflePlaylist(true) : ""
+              <div className={styles.controls}>
+                <div className={styles.top}>
+                  <InputSelect
+                    async
+                    loadOptions={(...args) => debounce(handleLoadOptions, args)}
+                    label="Add new song in room"
+                    placeholder="Search a song"
+                    value=""
+                    defaultOptions={defaultSongs}
+                    onChange={(song) =>
+                      onAddNewSong ? onAddNewSong(song) : ""
                     }
-                  >
-                    {alphabeticalIcon}
-                    Alphabetical
-                  </Button>
+                  />
 
-                  <Button
-                    className={styles.shuffle}
-                    onClick={onShufflePlaylist}
-                  >
-                    <Shuffle />
-                    Shuffle
-                  </Button>
+                  <div className={styles.buttons}>
+                    <Button
+                      className={styles.shuffle}
+                      onClick={() =>
+                        onShufflePlaylist ? onShufflePlaylist(true) : ""
+                      }
+                    >
+                      {alphabeticalIcon}
+                      Alphabetical
+                    </Button>
+
+                    <Button
+                      className={styles.shuffle}
+                      onClick={onShufflePlaylist}
+                    >
+                      <Shuffle />
+                      Shuffle
+                    </Button>
+                  </div>
+                </div>
+
+                <div className={styles.bottom}>
+                  <InputControl
+                    label="Highlight keyword in room"
+                    placeholder="Type here..."
+                    className={styles.inputContainer}
+                    defaultValue={inputKeyword}
+                    onChange={(event) => setInputKeyword(event.target.value)}
+                    maxLength={30}
+                  />
                 </div>
               </div>
 
@@ -314,7 +348,7 @@ function PlayerDetailsModal({
 
                             <div className={styles.details}>
                               <div className={styles.top}>
-                                <span>
+                                <span className={styles.fit}>
                                   {roomDetails.currentSong == item._id ? (
                                     musicBar(!roomDetails.paused)
                                   ) : (
@@ -322,10 +356,18 @@ function PlayerDetailsModal({
                                   )}
                                 </span>
 
-                                <p className={styles.title}>{item.title}</p>
+                                {returnPTagHighlighted(
+                                  item.title,
+                                  styles.title,
+                                  inputKeyword
+                                )}
                               </div>
 
-                              <p className={styles.desc}>{item.artist}</p>
+                              {returnPTagHighlighted(
+                                item.artist,
+                                styles.desc,
+                                inputKeyword
+                              )}
                             </div>
                           </div>
 
@@ -363,7 +405,7 @@ function PlayerDetailsModal({
         </Droppable>
       </DragDropContext>
     ),
-    [playlist, roomDetails.currentSong, roomDetails.paused]
+    [playlist, inputKeyword, roomDetails.currentSong, roomDetails.paused]
   );
 
   const usersDiv = (
