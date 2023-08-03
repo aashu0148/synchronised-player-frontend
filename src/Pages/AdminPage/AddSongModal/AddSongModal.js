@@ -42,7 +42,7 @@ function AddSongModal({ onClose, onSuccess }) {
   const [submitButtonDisabled, setSubmitButtonDisabled] = useState(false);
   const [uploadButtonText, setUploadButtonText] = useState(defaultUploadText);
 
-  const validateAudioFile = (file, maxFileSizeAllowed = 8) => {
+  const validateAudioFile = (file, maxFileSizeAllowed = 11) => {
     const { type, size } = file;
 
     if (!type.includes("audio"))
