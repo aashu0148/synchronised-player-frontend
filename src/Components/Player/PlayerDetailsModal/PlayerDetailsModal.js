@@ -22,7 +22,7 @@ import InputSelect from "Components/InputControl/InputSelect/InputSelect";
 import Button from "Components/Button/Button";
 import Spinner from "Components/Spinner/Spinner";
 
-import { dragIcon, pauseIcon, playIcon } from "utils/svgs";
+import { dragIcon, pauseIcon, playIcon, playlistMusicIcon } from "utils/svgs";
 import { getTimeFormatted } from "utils/util";
 import { roomUserTypeEnum } from "utils/constants";
 import {
@@ -34,6 +34,7 @@ import {
 import { searchSong } from "apis/song";
 
 import styles from "./PlayerDetailsModal.module.scss";
+import UserRoomsModal from "./UserRoomsModal/UserRoomsModal";
 
 let debounceTimeout;
 function PlayerDetailsModal({
@@ -56,6 +57,8 @@ function PlayerDetailsModal({
   onMicToggle,
   chatSoundEnabled,
   toggleChatSound,
+  userRooms = [],
+  updateUserRooms,
 }) {
   const messagesRef = useRef();
   const tabsEnum = {
@@ -72,7 +75,11 @@ function PlayerDetailsModal({
   const [playlist, setPlaylist] = useState(roomDetails.playlist || []);
   const [inputMessage, setInputMessage] = useState("");
   const [updatingAccessForUser, setUpdatingAccessForUser] = useState("");
+  const [selectedSongForUserRooms, setSelectedSongForUserRooms] = useState("");
 
+  const validUserRooms = userRooms.filter(
+    (item) => item._id !== roomDetails?._id
+  );
   const userRole = Array.isArray(roomDetails.users)
     ? roomDetails.users.find((item) => item._id == userDetails._id)?.role ||
       roomUserTypeEnum.member
@@ -300,13 +307,30 @@ function PlayerDetailsModal({
                               <p className={styles.desc}>{item.artist}</p>
                             </div>
                           </div>
-                          <div
-                            className={`icon ${styles.deleteIcon}`}
-                            onClick={() =>
-                              onDeleteSong ? onDeleteSong(item._id) : ""
-                            }
-                          >
-                            <X />
+
+                          <div className={styles.right}>
+                            {validUserRooms?.length ? (
+                              <div
+                                title="Add song to other room"
+                                className={`icon ${styles.deleteIcon}`}
+                                onClick={() =>
+                                  setSelectedSongForUserRooms(item)
+                                }
+                              >
+                                {playlistMusicIcon}
+                              </div>
+                            ) : (
+                              ""
+                            )}
+                            <div
+                              title={"remove song"}
+                              className={`icon ${styles.deleteIcon}`}
+                              onClick={() =>
+                                onDeleteSong ? onDeleteSong(item._id) : ""
+                              }
+                            >
+                              <X />
+                            </div>
                           </div>
                         </div>
                       )}
@@ -553,6 +577,19 @@ function PlayerDetailsModal({
 
   return (
     <Modal onClose={onClose} fullScreenInMobile>
+      {selectedSongForUserRooms ? (
+        <UserRoomsModal
+          onClose={() => {
+            setSelectedSongForUserRooms("");
+
+            if (updateUserRooms) updateUserRooms();
+          }}
+          userRooms={validUserRooms}
+          song={selectedSongForUserRooms}
+        />
+      ) : (
+        ""
+      )}
       <div className={styles.container}>
         <div className={styles.roomInfo}>
           <p className={styles.label}>You are listening in:</p>

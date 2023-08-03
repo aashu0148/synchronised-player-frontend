@@ -227,3 +227,47 @@ export const getCurrentRoom = async () => {
     return false;
   }
 };
+
+export const getUserRooms = async () => {
+  const reqPath = `/room/user`;
+  let response;
+
+  try {
+    response = await fetchWrapper(reqPath);
+    const data = await response.json();
+    if (!data?.success) {
+      errorToastLogger(
+        "getUserRooms",
+        data?.message || "Failed to get user's rooms",
+        data?.error
+      );
+      return false;
+    }
+    return data;
+  } catch (err) {
+    errorToastLogger("getUserRooms", "Failed to get user's rooms", err);
+    return false;
+  }
+};
+
+export const addSongToRoom = async (rid, sid) => {
+  const reqPath = `/room/song/${rid}/${sid}`;
+  let response;
+
+  try {
+    response = await fetchWrapper(reqPath, "", "", "POST");
+    const data = await response.json();
+    if (!data?.success) {
+      errorToastLogger(
+        "addSongToRoom",
+        data?.message || "Failed to add song",
+        data?.error
+      );
+      return false;
+    }
+    return data;
+  } catch (err) {
+    errorToastLogger("addSongToRoom", "Failed to add song", err);
+    return false;
+  }
+};

@@ -33,7 +33,7 @@ import {
 } from "utils/svgs";
 import { getAllSongs } from "apis/song";
 import { sayHiToBackend } from "apis/user";
-import { getCurrentRoom } from "apis/room";
+import { getCurrentRoom, getUserRooms } from "apis/room";
 import { roomUserTypeEnum } from "utils/constants";
 
 import styles from "./Player.module.scss";
@@ -46,6 +46,7 @@ const socketEventEnum = {
   next: "next",
   playSong: "play-song",
   addSong: "add-song",
+  deleteSong: "delete-song",
   notification: "notification",
   chat: "chat",
   clearChat: "clear-chat",
@@ -108,6 +109,7 @@ function Player({ socket }) {
   const [currentVolume, setCurrentVolume] = useState(
     parseFloat(localStorage.getItem("song-volume")) || 0.8
   );
+  const [userRooms, setUserRooms] = useState([]);
 
   const isPlayerActive = roomDetails?._id ? true : false;
   const currentSong =
@@ -181,20 +183,17 @@ function Player({ socket }) {
 
   const handleDeleteSong = (songId) => {
     if (!songId) return;
-    const newSongIds = roomDetails.playlist
-      .filter((item) => item._id !== songId)
-      .map((item) => item._id);
 
     if (songId == currentSong._id) {
       // pauseAudio(audioElemRef.current);
       audioElemRef.current.src = "";
     }
 
-    console.log("🟡update-playlist event emitted for deleting song");
-    socket.emit(socketEventEnum.updatePlaylist, {
+    console.log(`🟡${socketEventEnum.deleteSong} event emitted`);
+    socket.emit(socketEventEnum.deleteSong, {
       roomId: roomDetails._id,
       userId: userDetails._id,
-      songIds: newSongIds,
+      songId,
     });
   };
 
@@ -517,6 +516,14 @@ function Player({ socket }) {
     setAvailableSongs(res.data);
   };
 
+  const fetchUserRooms = async () => {
+    const res = await getUserRooms();
+
+    if (!res?.data) return;
+
+    setUserRooms(res.data);
+  };
+
   const readFileAsUrl = async (file) => {
     const reader = new FileReader();
 
@@ -818,9 +825,9 @@ function Player({ socket }) {
     globalBufferingVariable = isBuffering;
   }, [isBuffering]);
 
-  useEffect(() => {
-    fetchAllSongs();
-  }, [lastSongUploadedTime]);
+  // useEffect(() => {
+  //   fetchAllSongs();
+  // }, [lastSongUploadedTime]);
 
   useEffect(() => {
     if (audioElemRef.current) audioElemRef.current.volume = currentVolume;
@@ -832,6 +839,8 @@ function Player({ socket }) {
     setIsFirstRender(false);
     cleanIndexDBIfNeeded();
     getCurrentRoomForUser();
+    fetchUserRooms();
+    fetchAllSongs();
 
     setInterval(greetBackend, 120 * 1000);
 
@@ -930,6 +939,8 @@ function Player({ socket }) {
           onPlayNewSong={handlePlayNewSong}
           onDeleteSong={handleDeleteSong}
           allSongs={availableSongs}
+          userRooms={userRooms}
+          updateUserRooms={fetchUserRooms}
           onAddNewSong={handleAddSong}
           onReorderPlaylist={handleReorderPlaylist}
           onShufflePlaylist={handleShufflePlaylist}
