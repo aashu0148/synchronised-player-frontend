@@ -287,7 +287,9 @@ function PlayerDetailsModal({
 
                     <Button
                       className={styles.shuffle}
-                      onClick={onShufflePlaylist}
+                      onClick={() =>
+                        onShufflePlaylist ? onShufflePlaylist() : ""
+                      }
                     >
                       <Shuffle />
                       Shuffle
