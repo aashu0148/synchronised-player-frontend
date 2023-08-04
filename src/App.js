@@ -14,7 +14,7 @@ import Spinner from "Components/Spinner/Spinner";
 import Player from "Components/Player/Player";
 
 import actionTypes from "store/actionTypes";
-import { getCurrentUser } from "apis/user";
+import { getCurrentUser, sayHiToBackend } from "apis/user";
 
 import "styles/global.scss";
 
@@ -30,6 +30,10 @@ function App() {
   const [isMobileView, setIsMobileView] = useState("");
   const [appLoaded, setAppLoaded] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const greetBackend = async () => {
+    await sayHiToBackend();
+  };
 
   const handleUserDetection = async () => {
     const sleepingToken = localStorage.getItem("sleeping-token");
@@ -137,6 +141,7 @@ function App() {
 
   useEffect(() => {
     handleUserDetection();
+    greetBackend();
 
     window.addEventListener("resize", handleResize);
 
