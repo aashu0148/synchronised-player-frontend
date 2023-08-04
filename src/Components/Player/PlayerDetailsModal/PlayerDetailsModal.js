@@ -344,15 +344,15 @@ function PlayerDetailsModal({
                         ref={provided.innerRef}
                       >
                         <div className={styles.left}>
-                          {onlyHighlight ? (
+                          {!onlyHighlight && inputKeyword ? (
+                            ""
+                          ) : (
                             <div
                               className={styles.drag}
                               {...provided.dragHandleProps}
                             >
                               {dragIcon}
                             </div>
-                          ) : (
-                            ""
                           )}
 
                           <div
