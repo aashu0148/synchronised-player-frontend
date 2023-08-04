@@ -299,7 +299,7 @@ function PlayerDetailsModal({
 
                 <div className={styles.bottom}>
                   <InputControl
-                    label="Highlight keyword in room"
+                    label="Find song in room"
                     placeholder="Type here..."
                     className={styles.inputContainer}
                     defaultValue={inputKeyword}
@@ -310,97 +310,108 @@ function PlayerDetailsModal({
               </div>
 
               {Array.isArray(roomDetails.playlist)
-                ? playlist.map((item, i) => (
-                    <Draggable key={item._id} index={i} draggableId={item._id}>
-                      {(provided) => (
-                        <div
-                          className={`${styles.song} ${
-                            roomDetails.currentSong == item._id
-                              ? styles.playing
-                              : ""
-                          }`}
-                          key={item._id}
-                          {...provided.draggableProps}
-                          ref={provided.innerRef}
-                        >
-                          <div className={styles.left}>
-                            <div
-                              className={styles.drag}
-                              {...provided.dragHandleProps}
-                            >
-                              {dragIcon}
-                            </div>
+                ? playlist
+                    .filter((item) =>
+                      inputKeyword && item?.title && item.artist
+                        ? item.title.toLowerCase().includes(inputKeyword) ||
+                          item.artist.toLowerCase().includes(inputKeyword)
+                        : true
+                    )
+                    .map((item, i) => (
+                      <Draggable
+                        key={item._id}
+                        index={i}
+                        draggableId={item._id}
+                      >
+                        {(provided) => (
+                          <div
+                            className={`${styles.song} ${
+                              roomDetails.currentSong == item._id
+                                ? styles.playing
+                                : ""
+                            }`}
+                            key={item._id}
+                            {...provided.draggableProps}
+                            ref={provided.innerRef}
+                          >
+                            <div className={styles.left}>
+                              <div
+                                className={styles.drag}
+                                {...provided.dragHandleProps}
+                              >
+                                {dragIcon}
+                              </div>
 
-                            <div
-                              className={styles.play}
-                              onClick={() =>
-                                onToggleCurrentSong && onPlayNewSong
-                                  ? roomDetails.currentSong == item._id
-                                    ? onToggleCurrentSong()
-                                    : onPlayNewSong(item._id)
-                                  : ""
-                              }
-                            >
-                              {roomDetails.currentSong == item._id
-                                ? roomDetails.paused
-                                  ? playIcon
-                                  : pauseIcon
-                                : playIcon}
-                            </div>
+                              <div
+                                className={styles.play}
+                                onClick={() =>
+                                  onToggleCurrentSong && onPlayNewSong
+                                    ? roomDetails.currentSong == item._id
+                                      ? onToggleCurrentSong()
+                                      : onPlayNewSong(item._id)
+                                    : ""
+                                }
+                              >
+                                {roomDetails.currentSong == item._id
+                                  ? roomDetails.paused
+                                    ? playIcon
+                                    : pauseIcon
+                                  : playIcon}
+                              </div>
 
-                            <div className={styles.details}>
-                              <div className={styles.top}>
-                                <span className={styles.fit}>
-                                  {roomDetails.currentSong == item._id ? (
-                                    musicBar(!roomDetails.paused)
-                                  ) : (
-                                    <Headphones />
+                              <div className={styles.details}>
+                                <div className={styles.top}>
+                                  <span className={styles.fit}>
+                                    {roomDetails.currentSong == item._id ? (
+                                      musicBar(!roomDetails.paused)
+                                    ) : (
+                                      <Headphones />
+                                    )}
+                                  </span>
+
+                                  {returnPTagHighlighted(
+                                    item.title,
+                                    styles.title,
+                                    inputKeyword
                                   )}
-                                </span>
+                                </div>
 
                                 {returnPTagHighlighted(
-                                  item.title,
-                                  styles.title,
+                                  item.artist,
+                                  styles.desc,
                                   inputKeyword
                                 )}
                               </div>
-
-                              {returnPTagHighlighted(
-                                item.artist,
-                                styles.desc,
-                                inputKeyword
-                              )}
                             </div>
-                          </div>
 
-                          <div className={styles.right}>
-                            {validUserRooms?.length ? (
+                            <div className={styles.right}>
+                              {validUserRooms?.length ? (
+                                <div
+                                  title="Add song to other room"
+                                  className={`icon ${styles.deleteIcon}`}
+                                  onClick={() =>
+                                    setSelectedSongForUserRooms(item)
+                                  }
+                                >
+                                  {playlistMusicIcon}
+                                </div>
+                              ) : (
+                                ""
+                              )}
                               <div
-                                title="Add song to other room"
+                                title={"remove song"}
                                 className={`icon ${styles.deleteIcon}`}
                                 onClick={() =>
-                                  setSelectedSongForUserRooms(item)
+                                  onDeleteSong ? onDeleteSong(item._id) : ""
                                 }
                               >
-                                {playlistMusicIcon}
+                                <X />
                               </div>
-                            ) : (
-                              ""
-                            )}
-                            <div
-                              title={"remove song"}
-                              className={`icon ${styles.deleteIcon}`}
-                              onClick={() =>
-                                onDeleteSong ? onDeleteSong(item._id) : ""
-                              }
-                            >
-                              <X />
                             </div>
                           </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))
+                        )}
+                      </Draggable>
+                    ))
                 : ""}
             </div>
           )}
