@@ -5,6 +5,7 @@ import {
   ArrowUp,
   Bell,
   BellOff,
+  Filter,
   Headphones,
   Mic,
   MicOff,
@@ -84,6 +85,7 @@ function PlayerDetailsModal({
   const [inputKeyword, setInputKeyword] = useState("");
   const [updatingAccessForUser, setUpdatingAccessForUser] = useState("");
   const [selectedSongForUserRooms, setSelectedSongForUserRooms] = useState("");
+  const [onlyHighlight, setOnlyHighlight] = useState(false);
 
   const validUserRooms = userRooms.filter(
     (item) => item._id !== roomDetails?._id
@@ -101,12 +103,14 @@ function PlayerDetailsModal({
       artist: item.artist,
     }));
   const playlistSongs = Array.isArray(playlist)
-    ? playlist.filter((item) =>
-        inputKeyword && item?.title && item.artist
-          ? item.title.toLowerCase().includes(inputKeyword.toLowerCase()) ||
-            item.artist.toLowerCase().includes(inputKeyword.toLowerCase())
-          : true
-      )
+    ? onlyHighlight
+      ? playlist
+      : playlist.filter((item) =>
+          inputKeyword && item?.title && item.artist
+            ? item.title.toLowerCase().includes(inputKeyword.toLowerCase()) ||
+              item.artist.toLowerCase().includes(inputKeyword.toLowerCase())
+            : true
+        )
     : [];
 
   const debounce = (func, args, timer = 300) => {
@@ -284,7 +288,7 @@ function PlayerDetailsModal({
 
                   <div className={styles.buttons}>
                     <Button
-                      className={styles.shuffle}
+                      className={styles.btn}
                       onClick={() =>
                         onShufflePlaylist ? onShufflePlaylist(true) : ""
                       }
@@ -294,7 +298,7 @@ function PlayerDetailsModal({
                     </Button>
 
                     <Button
-                      className={styles.shuffle}
+                      className={styles.btn}
                       onClick={() =>
                         onShufflePlaylist ? onShufflePlaylist() : ""
                       }
@@ -314,6 +318,14 @@ function PlayerDetailsModal({
                     onChange={(event) => setInputKeyword(event.target.value)}
                     maxLength={30}
                   />
+
+                  <Button
+                    className={styles.btn}
+                    outlineButton={onlyHighlight}
+                    onClick={() => setOnlyHighlight((prev) => !prev)}
+                  >
+                    <Filter />
+                  </Button>
                 </div>
               </div>
 
@@ -332,15 +344,15 @@ function PlayerDetailsModal({
                         ref={provided.innerRef}
                       >
                         <div className={styles.left}>
-                          {inputKeyword ? (
-                            ""
-                          ) : (
+                          {onlyHighlight ? (
                             <div
                               className={styles.drag}
                               {...provided.dragHandleProps}
                             >
                               {dragIcon}
                             </div>
+                          ) : (
+                            ""
                           )}
 
                           <div
@@ -425,7 +437,13 @@ function PlayerDetailsModal({
         </Droppable>
       </DragDropContext>
     ),
-    [playlist, inputKeyword, roomDetails.currentSong, roomDetails.paused]
+    [
+      playlist,
+      onlyHighlight,
+      inputKeyword,
+      roomDetails.currentSong,
+      roomDetails.paused,
+    ]
   );
 
   const usersDiv = (
