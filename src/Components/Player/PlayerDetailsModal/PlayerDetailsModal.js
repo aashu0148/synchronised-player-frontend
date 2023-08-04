@@ -313,8 +313,12 @@ function PlayerDetailsModal({
                 ? playlist
                     .filter((item) =>
                       inputKeyword && item?.title && item.artist
-                        ? item.title.toLowerCase().includes(inputKeyword) ||
-                          item.artist.toLowerCase().includes(inputKeyword)
+                        ? item.title
+                            .toLowerCase()
+                            .includes(inputKeyword.toLowerCase()) ||
+                          item.artist
+                            .toLowerCase()
+                            .includes(inputKeyword.toLowerCase())
                         : true
                     )
                     .map((item, i) => (
