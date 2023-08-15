@@ -130,7 +130,8 @@
       gap: 15px;
       position: relative;
 
-      .volumeButton {
+      .volumeButton,
+      .repeatButton {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
@@ -179,6 +180,19 @@
           input {
             width: 100%;
             outline: none;
+          }
+        }
+      }
+
+      .repeatButton {
+        right: 5px;
+        left: auto;
+      }
+
+      .activeButton {
+        .icon {
+          svg {
+            fill: $primary;
           }
         }
       }
@@ -367,6 +381,10 @@
 
     .controller {
       .buttons {
+        .repeatButton {
+          left: 20px;
+        }
+
         .volumeButton {
           left: -18px;
         }

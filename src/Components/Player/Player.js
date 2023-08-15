@@ -30,6 +30,8 @@ import {
   pauseIcon,
   playIcon,
   previousPlayIcon,
+  repeatIcon,
+  repeatOneIcon,
 } from "utils/svgs";
 import { getAllSongs } from "apis/song";
 import { sayHiToBackend } from "apis/user";
@@ -109,6 +111,7 @@ function Player({ socket }) {
   const [currentVolume, setCurrentVolume] = useState(
     parseFloat(localStorage.getItem("song-volume")) || 0.8
   );
+  const [repeatCurrentSong, setRepeatCurrentSong] = useState(false);
   const [userRooms, setUserRooms] = useState([]);
 
   const isPlayerActive = roomDetails?._id ? true : false;
@@ -218,6 +221,17 @@ function Player({ socket }) {
   };
 
   const handleNextClick = (autoPlay = false) => {
+    if (autoPlay && repeatCurrentSong) {
+      const audio = audioElemRef.current;
+      if (!audio) return;
+
+      if (audio.paused) playAudio(audio);
+      audio.currentTime = 0;
+      setAudioElemCurrTime(0);
+
+      return;
+    }
+
     console.log("🟡next event emitted");
     socket.emit(socketEventEnum.next, {
       roomId: roomDetails._id,
@@ -931,6 +945,21 @@ function Player({ socket }) {
     </div>
   );
 
+  const repeatButton = (
+    <div
+      className={`${styles.repeatButton} ${
+        repeatCurrentSong ? styles.activeButton : ""
+      }`}
+    >
+      <div
+        className={styles.icon}
+        onClick={() => setRepeatCurrentSong((prev) => !prev)}
+      >
+        {repeatCurrentSong ? repeatOneIcon : repeatIcon}
+      </div>
+    </div>
+  );
+
   return (
     <div
       className={`${styles.container} ${isPlayerActive ? "" : styles.inactive}`}
@@ -1016,16 +1045,17 @@ function Player({ socket }) {
       <div className={styles.controller}>
         <div className={styles.buttons}>
           {volumeButton}
+          {repeatButton}
 
           <div
             className={`${styles.button} ${styles.prev}`}
-            onClick={handlePreviousClick}
+            onClick={() => handlePreviousClick()}
           >
             {previousPlayIcon}
           </div>
           <div
             className={`${styles.button} ${styles.play}`}
-            onClick={handlePlayPauseToggle}
+            onClick={() => handlePlayPauseToggle()}
           >
             {isBuffering
               ? dotLoadingDiv
@@ -1035,7 +1065,7 @@ function Player({ socket }) {
           </div>
           <div
             className={`${styles.button} ${styles.next}`}
-            onClick={handleNextClick}
+            onClick={() => handleNextClick()}
           >
             {nextPlayIcon}
           </div>
