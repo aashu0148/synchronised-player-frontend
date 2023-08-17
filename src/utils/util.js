@@ -263,6 +263,9 @@ export const getSongUrlFromBackupStorage = (url) => {
     "sleeping-owl-storage-2": "sleeping-owl-backup-2",
     "sleeping-owl-storage-3": "sleeping-owl-backup-3",
     "sleeping-owl-storage-4": "sleeping-owl-backup-4",
+    "sleeping-owl-storage-5": "sleeping-owl-backup-5",
+    "sleeping-owl-storage-6": "sleeping-owl-backup-6",
+    "sleeping-owl-storage-7": "sleeping-owl-backup-7",
   };
 
   const backupBuckets = Object.values(backupBucketsMap);
