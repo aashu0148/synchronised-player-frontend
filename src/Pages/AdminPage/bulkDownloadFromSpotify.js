@@ -7,6 +7,8 @@ const getFileDownloadLinksFromSpotifyDown = async (
     return;
   }
 
+  const startTime = Date.now();
+
   console.log(`🟡Getting all the track list`);
   const allSongsData = [];
 
@@ -55,7 +57,116 @@ const getFileDownloadLinksFromSpotifyDown = async (
       });
   }
 
-  console.log(`🟢 got all files with links and meta`, filesWithLinks);
+  const endTime = Date.now();
+
+  console.log(
+    `🟢 got all files with links and meta in ${
+      (endTime - startTime) / 1000
+    }sec`,
+    filesWithLinks
+  );
+  return filesWithLinks;
+};
+
+const getFileDownloadLinksFromSpotifyDownParallelly = async (
+  playlistId,
+  maxFiles = 500
+) => {
+  if (!playlistId) {
+    console.log(`🔴Playlist Id required`);
+    return;
+  }
+  const startTime = Date.now();
+
+  console.log(`🟡Getting all the track list`);
+  const allSongsData = [];
+
+  for (let i = 0; i < maxFiles; i += 100) {
+    const tempRes = await (
+      await fetch(
+        `https://api.spotifydown.com/trackList/playlist/${playlistId}?offset=${i}`
+      )
+    ).json();
+    if (!tempRes.success) {
+      console.log(`🔴Error getting trackLists`, tempRes);
+      continue;
+    }
+
+    const trackList = Array.isArray(tempRes?.trackList)
+      ? tempRes.trackList
+      : [];
+    if (trackList?.length < 50) i = maxFiles;
+
+    allSongsData.push(...trackList);
+  }
+
+  function chunkArray(inputArray, chunkSize) {
+    const outputArray = [];
+
+    for (let i = 0; i < inputArray.length; i += chunkSize) {
+      const chunk = inputArray.slice(i, i + chunkSize);
+      outputArray.push(chunk);
+    }
+
+    return outputArray;
+  }
+
+  const filesWithLinks = [];
+
+  const chunkSize = 10;
+  const segregatedSongs = chunkArray(allSongsData, chunkSize);
+  const jsonResponses = [];
+
+  for (let i = 0; i < segregatedSongs.length; ++i) {
+    console.log(
+      `🟡Getting link for files [${i * chunkSize} - ${
+        i * chunkSize + chunkSize
+      }]`
+    );
+
+    const chunk = segregatedSongs[i];
+
+    const responses = await Promise.all(
+      chunk.map((item) =>
+        fetch(`https://api.spotifydown.com/download/${item.id}`).catch((err) =>
+          console.error("fetch error: ", err)
+        )
+      )
+    );
+
+    for (let i = 0; i < responses.length; ++i) {
+      const item = responses[i];
+
+      let json;
+      try {
+        json = await item.json();
+      } catch (err) {
+        json = null;
+      }
+
+      if (json) jsonResponses.push(json);
+    }
+  }
+
+  console.log(`Got the responses for ${jsonResponses.length} files`);
+
+  jsonResponses.forEach((item) => {
+    if (item?.link)
+      filesWithLinks.push({
+        // link: "https://corsproxy.io/?" + item.link,
+        link: item.link,
+        ...item.metadata,
+      });
+  });
+
+  const endTime = Date.now();
+
+  console.log(
+    `🟢 got all files with links and meta in ${
+      (endTime - startTime) / 1000
+    }sec`,
+    filesWithLinks
+  );
   return filesWithLinks;
 };
 
