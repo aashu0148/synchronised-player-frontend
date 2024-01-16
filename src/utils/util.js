@@ -6,6 +6,12 @@ import { getCurrentUser } from "apis/user";
 
 const backendApiUrl = process.env.REACT_APP_BACKEND_URL;
 
+export const copyToClipboard = (text, hideToast = false) => {
+  if (!text) return;
+  if (!hideToast) toast.success("Copied");
+  navigator.clipboard.writeText(text);
+};
+
 export const handleNumericInputKeyDown = (event) => {
   let key = event.key;
 

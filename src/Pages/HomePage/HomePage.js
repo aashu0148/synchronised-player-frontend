@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 
 import Button from "Components/Button/Button";
 import Spinner from "Components/Spinner/Spinner";
 import CreateRoomModal from "./CreateRoomModal/CreateRoomModal";
+import AddSongModal from "Pages/AdminPage/AddSongModal/AddSongModal";
+import DeleteRoomModal from "./DeleteRoomModal/DeleteRoomModal";
 
 import { deleteRoom, getAllRooms } from "apis/room";
 import { getRandomInteger, getTimeDurationFromSeconds } from "utils/util";
 import actionTypes from "store/actionTypes";
 
 import styles from "./HomePage.module.scss";
-import AddSongModal from "Pages/AdminPage/AddSongModal/AddSongModal";
-import DeleteRoomModal from "./DeleteRoomModal/DeleteRoomModal";
 
 const lightColors = [
   "#fff",
@@ -27,7 +27,9 @@ const lightColors = [
   "#EFFFFD",
   "#ffffff",
 ];
+
 function HomePage({ socket }) {
+  const pageRefreshRetries = useRef(0);
   const dispatch = useDispatch();
   const userDetails = useSelector((state) => state.root.user);
   const roomDetails = useSelector((state) => state.root.room);
@@ -85,7 +87,14 @@ function HomePage({ socket }) {
   const fetchAllRooms = async () => {
     const res = await getAllRooms();
     setLoadingPage(false);
-    if (!res?.data) return;
+    if (!res?.data) {
+      if (pageRefreshRetries.current < 5) {
+        ++pageRefreshRetries.current;
+        fetchAllRooms();
+      }
+
+      return;
+    }
 
     setRooms(
       res.data.map((item) => ({

@@ -70,6 +70,7 @@ const getFileDownloadLinksFromSpotifyDown = async (
 
 const getFileDownloadLinksFromSpotifyDownParallelly = async (
   playlistId,
+  simultaneouslyUpdateOnServer = false,
   maxFiles = 500
 ) => {
   if (!playlistId) {
@@ -113,7 +114,7 @@ const getFileDownloadLinksFromSpotifyDownParallelly = async (
 
   const filesWithLinks = [];
 
-  const chunkSize = 10;
+  const chunkSize = 5;
   const segregatedSongs = chunkArray(allSongsData, chunkSize);
   const jsonResponses = [];
 
@@ -134,6 +135,7 @@ const getFileDownloadLinksFromSpotifyDownParallelly = async (
       )
     );
 
+    const currResponses = [];
     for (let i = 0; i < responses.length; ++i) {
       const item = responses[i];
 
@@ -144,19 +146,27 @@ const getFileDownloadLinksFromSpotifyDownParallelly = async (
         json = null;
       }
 
-      if (json) jsonResponses.push(json);
+      if (json && json?.link) {
+        const songData = { link: json.link, ...json.metadata };
+        jsonResponses.push(songData);
+        currResponses.push(songData);
+      }
     }
+
+    if (simultaneouslyUpdateOnServer)
+      await fetch(`https://sleeping-owl.onrender.com/song/bulk/d-u`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tracks: currResponses,
+        }),
+      }).catch((err) => console.log("Error on server", err));
   }
 
   console.log(`Got the responses for ${jsonResponses.length} files`);
 
   jsonResponses.forEach((item) => {
-    if (item?.link)
-      filesWithLinks.push({
-        // link: "https://corsproxy.io/?" + item.link,
-        link: item.link,
-        ...item.metadata,
-      });
+    filesWithLinks.push(item);
   });
 
   const endTime = Date.now();
