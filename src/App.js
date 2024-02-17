@@ -170,7 +170,7 @@ function App() {
     <div className={`main-app`}>
       <BrowserRouter>
         <Toaster
-          position="bottom"
+          position={isMobileView ? "top-right" : "bottom"}
           toastOptions={{
             duration: 3000,
           }}

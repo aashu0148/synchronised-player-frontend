@@ -24,11 +24,20 @@ function Modal({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const touchDetails = useRef({
+    moving: false,
+    startX: 0,
+    startY: 0,
+    endX: 0,
+  });
 
   const containerRef = useRef();
   const isMobileView = useSelector((state) => state.root.mobileView);
 
   const [lastLocation, setLastLocation] = useState("");
+  // const [touchDetails, setTouchDetails] = useState({
+  //   isMoving: false,
+  // });
 
   const uniqueId = useMemo(() => generateUniqueString(), []);
 
@@ -67,11 +76,58 @@ function Modal({
     if (!params.get("modal") && onClose) handleCloseModal();
   };
 
+  const handleTouchStart = (event) => {
+    const touch = event.touches[0];
+    if (touch && touch.clientX) {
+      touchDetails.current.startX = touch.clientX;
+      touchDetails.current.startY = touch.clientY;
+    }
+  };
+
+  const handleTouchMove = (event) => {
+    const touch = event.touches[0];
+    if (touch && touch.clientX) touchDetails.current.moving = true;
+  };
+
+  const handleTouchEnd = (event) => {
+    const touch = event.changedTouches[0];
+    if (touch && touch.clientX) {
+      const clientX = touch.clientX;
+      const clientY = touch.clientY;
+      touchDetails.current.endX = clientX;
+      touchDetails.current.moving = false;
+
+      const minimumDistance = 70,
+        maxStartX = 95,
+        maxDy = 80;
+      const distance = clientX - touchDetails.current.startX;
+      const distanceY = Math.abs(clientY - touchDetails.current.startY);
+
+      if (
+        !distance ||
+        distance < 0 ||
+        !touchDetails.current.startX ||
+        !clientX ||
+        touchDetails.current.startX > maxStartX ||
+        distance < minimumDistance ||
+        distanceY > maxDy
+      )
+        return;
+
+      // swipe done from left to right with minimum distance of 60px
+      handleCloseModal();
+    }
+  };
+
   useEffect(() => {
     handleLocationChange();
   }, [location]);
 
   useEffect(() => {
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleTouchEnd);
+
     if (isMobileView) {
       document.body.style.overflowY = "hidden";
     }
@@ -82,6 +138,10 @@ function Modal({
 
     return () => {
       document.body.style.overflowY = "auto";
+
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 

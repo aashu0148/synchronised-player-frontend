@@ -2,6 +2,9 @@ import React from "react";
 import Select from "react-select";
 import AsyncSelect from "react-select/async";
 import AsyncCreatableSelect from "react-select/async-creatable";
+import { useSelector } from "react-redux";
+
+import { themeEnum } from "utils/constants";
 
 import styles from "../InputControl.module.scss";
 
@@ -14,6 +17,9 @@ function InputSelect({
   components = {},
   ...rest
 }) {
+  const currentTheme = useSelector((state) => state.root.theme);
+  const isDarkTheme = currentTheme === themeEnum.dark;
+
   const colors = {
     black: "#040406",
     primary: "#f327a5",
@@ -29,6 +35,7 @@ function InputSelect({
     control: (provided, { selectProps: { error }, isFocused }) => ({
       ...provided,
       height: 37,
+      backgroundColor: isDarkTheme ? "#f0f0f0" : "#fefefe",
       borderColor: colors.white2,
       boxShadow: error
         ? `0 0 0 1px ${colors.red}`

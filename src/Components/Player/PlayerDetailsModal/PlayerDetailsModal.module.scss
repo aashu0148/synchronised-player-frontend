@@ -714,6 +714,7 @@
   }
 
   @media (max-width: $breakpoint-md) {
+    height: 100%;
     padding: 10px;
     gap: 20px;
 
@@ -787,7 +788,7 @@
     }
 
     .activityDiv {
-      max-height: 530px;
+      max-height: calc(100% - var(--header-height) - 20px);
       padding: 5px;
 
       .activity {
@@ -840,7 +841,7 @@
     }
 
     .chatBox {
-      height: 530px;
+      height: calc(100% - var(--header-height) - 18px);
 
       .empty {
         font-size: 16px;

@@ -45,6 +45,7 @@ const darkColors = [
   "#000000",
 ];
 
+let refreshInterval;
 function HomePage({ socket }) {
   const pageRefreshRetries = useRef(0);
   const dispatch = useDispatch();
@@ -104,7 +105,7 @@ function HomePage({ socket }) {
     });
   };
 
-  const fetchAllRooms = async () => {
+  const fetchAllRooms = async (doNotChangeColors = false) => {
     const res = await getAllRooms();
     setLoadingPage(false);
     if (!res?.data) {
@@ -116,12 +117,22 @@ function HomePage({ socket }) {
       return;
     }
 
-    setRooms(
-      res.data.map((item) => ({
-        ...item,
-        color: bgColors[getRandomInteger(0, bgColors.length - 1)],
-      }))
+    setRooms((prev) =>
+      res.data.map((item) => {
+        const prevRoom = prev.find((r) => r._id === item._id);
+
+        return {
+          ...item,
+          color:
+            prevRoom?.color && doNotChangeColors
+              ? prevRoom.color
+              : bgColors[getRandomInteger(0, bgColors.length - 1)],
+        };
+      })
     );
+
+    // do not try re-fetching after getting one success response because server is now awake
+    pageRefreshRetries.current = 5;
   };
 
   const handleSongUploaded = () => {
@@ -140,6 +151,17 @@ function HomePage({ socket }) {
   useEffect(() => {
     fetchAllRooms();
   }, [roomDetails._id]);
+
+  useEffect(() => {
+    clearInterval(refreshInterval);
+
+    refreshInterval = setInterval(() => {
+      // re fetch all rooms just to show nearly correct info regarding songs and current users
+      fetchAllRooms(true);
+    }, 100 * 1000);
+
+    return () => clearInterval(refreshInterval);
+  }, []);
 
   return loadingPage ? (
     <div className="spinner-container">
