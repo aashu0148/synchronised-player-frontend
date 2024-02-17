@@ -154,6 +154,7 @@
           svg {
             height: 18px;
             width: 18px;
+            color: $black;
           }
 
           p {
@@ -233,14 +234,14 @@
         font-size: 16px;
         line-height: 20px;
         font-weight: 500;
-        color: $white-2;
+        color: $white;
       }
 
       .progressBar {
         flex: 1;
         width: 100%;
         border-radius: 10px;
-        background-color: $white-2;
+        background-color: $bg-1;
         height: 7px;
         position: relative;
 

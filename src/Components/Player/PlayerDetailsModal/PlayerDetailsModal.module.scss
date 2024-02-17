@@ -78,14 +78,16 @@
     .label {
       font-size: 16px;
       line-height: 18px;
-      color: $gray;
+      color: $label;
     }
 
     .room {
       font-size: 16px;
       line-height: 25px;
+      color: $title;
 
       span {
+        color: inherit;
         font: inherit;
         font-weight: bold;
         margin: 0 5px;
@@ -110,7 +112,7 @@
       color: $title;
 
       &:hover {
-        background-color: $pinkish-white;
+        background-color: $pinkish;
       }
 
       .muteButton {
@@ -338,6 +340,13 @@
         display: flex;
         align-items: center;
         gap: 10px;
+
+        .deleteIcon {
+          svg {
+            fill: $title;
+            color: $title;
+          }
+        }
       }
     }
 
@@ -358,22 +367,24 @@
             font-weight: bold;
           }
           .desc {
-            color: $white-2;
+            color: $white;
           }
         }
       }
 
-      .deleteIcon {
-        &:hover {
-          svg {
-            color: $black;
-            fill: $black;
+      .right {
+        .deleteIcon {
+          &:hover {
+            svg {
+              color: $black;
+              fill: $black;
+            }
           }
-        }
 
-        svg {
-          color: $white;
-          fill: $white;
+          svg {
+            color: $white;
+            fill: $white;
+          }
         }
       }
     }
@@ -394,7 +405,7 @@
       border-bottom: 1px solid $white-2;
 
       &:nth-child(even) {
-        background-color: $pinkish-white;
+        background-color: $pinkish;
       }
 
       &:last-child {
@@ -408,7 +419,7 @@
 
         .time {
           font-size: 16px;
-          color: $gray-2;
+          color: $label;
           font-weight: 500;
         }
       }
@@ -417,12 +428,14 @@
         font-size: 16px;
         line-height: 22px;
         font-weight: 600;
+        color: $title;
       }
 
       .desc {
         font-size: 14px;
         line-height: 20px;
         font-weight: 500;
+        color: $desc;
       }
     }
   }
@@ -444,7 +457,7 @@
       gap: 20px;
 
       &:nth-child(even) {
-        background-color: $pinkish-white;
+        background-color: $pinkish;
       }
 
       &:last-child {
@@ -537,7 +550,7 @@
         top: 0px;
         padding: 10px;
         border-radius: 5px;
-        background-color: $white;
+        background-color: $bg-1;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.118);
         display: flex;
         gap: 15px;
@@ -587,7 +600,7 @@
           width: 100%;
           display: flex;
           flex-direction: column;
-          background-color: $pinkish-white;
+          background-color: $pinkish;
           border-radius: 10px;
           border-top-left-radius: 0;
           overflow: hidden;
@@ -656,7 +669,7 @@
 
     .footer {
       width: 100%;
-      background-color: $white;
+      background-color: $white-1;
       border-top: 1px solid $white-2;
       display: flex;
       gap: 10px;
@@ -669,13 +682,13 @@
         border: 1px solid transparent;
         font-size: 16px;
         line-height: 25px;
-        color: $black;
+        color: $title;
         border-radius: 5px;
         background-color: $white-1;
         transition: 200ms;
 
         &::placeholder {
-          color: $gray;
+          color: $desc;
         }
 
         &:hover {
