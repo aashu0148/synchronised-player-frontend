@@ -40,14 +40,18 @@ function Navbar() {
             }}
           />
           <div
-            className={`${styles.item} ${styles.moon}`}
+            className={`${styles.item} ${styles.moon} ${
+              currentTheme === themeEnum.dark ? styles.white : ""
+            }`}
             onClick={() => changeTheme(themeEnum.dark)}
             title="dark"
           >
             {moonIcon}
           </div>
           <div
-            className={`${styles.item} ${styles.sun}`}
+            className={`${styles.item} ${styles.sun} ${
+              currentTheme === themeEnum.light ? styles.white : ""
+            }`}
             onClick={() => changeTheme(themeEnum.light)}
             title="light"
           >

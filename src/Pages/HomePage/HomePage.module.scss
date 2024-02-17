@@ -17,6 +17,7 @@
     .title {
       font-size: 26px;
       font-weight: bold;
+      color: $heading;
     }
 
     .buttons {
@@ -48,6 +49,7 @@
         text-transform: capitalize;
         font-size: 24px;
         font-weight: 600;
+        color: $title;
       }
 
       .playlist {
@@ -62,7 +64,7 @@
           font-size: 18px;
           line-height: 22px;
           font-weight: 600;
-          color: $gray-2;
+          color: $label;
         }
 
         .songs {
@@ -78,6 +80,7 @@
             border-radius: 30px;
             background-color: $pinkish-white;
             background-color: $white-1;
+            color: $title;
             font-size: 16px;
             font-weight: 600;
             text-overflow: ellipsis;
@@ -93,11 +96,17 @@
         align-items: center;
         justify-content: flex-end;
 
+        label {
+          color: $title;
+        }
+
         .value {
           font-size: 16px;
           font-weight: 400;
+          color: $title;
 
           span {
+            color: inherit;
             margin-left: 8px;
             font: inherit;
             font-weight: 600;
@@ -181,6 +190,7 @@
           font-size: 20px;
           margin-top: -6px;
           font-weight: 500;
+          color: $title;
         }
       }
     }
