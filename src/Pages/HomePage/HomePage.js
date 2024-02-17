@@ -11,6 +11,7 @@ import DeleteRoomModal from "./DeleteRoomModal/DeleteRoomModal";
 import { deleteRoom, getAllRooms } from "apis/room";
 import { getRandomInteger, getTimeDurationFromSeconds } from "utils/util";
 import actionTypes from "store/actionTypes";
+import { themeEnum } from "utils/constants";
 
 import styles from "./HomePage.module.scss";
 
@@ -28,12 +29,29 @@ const lightColors = [
   "#ffffff",
 ];
 
+const darkColors = [
+  "#121212",
+  "#1E1E1E",
+  "#2C2C2C",
+  "#303030",
+  "#424242",
+  "#616161",
+  "#31343b",
+  "#4e4e4e",
+  "#452900",
+  "#3a0325",
+  "#3a2903",
+  "#292001",
+  "#000000",
+];
+
 function HomePage({ socket }) {
   const pageRefreshRetries = useRef(0);
   const dispatch = useDispatch();
   const userDetails = useSelector((state) => state.root.user);
   const roomDetails = useSelector((state) => state.root.room);
   const joiningRoom = useSelector((state) => state.root.joiningRoom);
+  const currentTheme = useSelector((state) => state.root.theme);
 
   const [loadingPage, setLoadingPage] = useState(true);
   const [rooms, setRooms] = useState([]);
@@ -44,6 +62,8 @@ function HomePage({ socket }) {
   });
   const [selectedRoom, setSelectedRoom] = useState({});
   const [deletingRoom, setDeletingRoom] = useState("");
+
+  const bgColors = currentTheme === themeEnum.dark ? darkColors : lightColors;
 
   const handleDeleteRoom = async (rid) => {
     if (deletingRoom) return;
@@ -99,7 +119,7 @@ function HomePage({ socket }) {
     setRooms(
       res.data.map((item) => ({
         ...item,
-        color: lightColors[getRandomInteger(0, lightColors.length - 1)],
+        color: bgColors[getRandomInteger(0, bgColors.length - 1)],
       }))
     );
   };
@@ -107,6 +127,15 @@ function HomePage({ socket }) {
   const handleSongUploaded = () => {
     dispatch({ type: actionTypes.NEW_SONG_UPLOADED });
   };
+
+  useEffect(() => {
+    setRooms((prev) =>
+      prev.map((item) => ({
+        ...item,
+        color: bgColors[getRandomInteger(0, bgColors.length - 1)],
+      }))
+    );
+  }, [currentTheme]);
 
   useEffect(() => {
     fetchAllRooms();

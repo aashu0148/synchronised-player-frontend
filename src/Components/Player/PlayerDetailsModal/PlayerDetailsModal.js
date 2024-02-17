@@ -68,7 +68,9 @@ function PlayerDetailsModal({
   userRooms = [],
   updateUserRooms,
 }) {
-  const messagesRef = useRef();
+  const headerRef = useRef();
+  const messagesOuterRef = useRef();
+  const chatInputRef = useRef();
   const tabsEnum = {
     playlist: "playlist",
     users: "users",
@@ -141,6 +143,7 @@ function PlayerDetailsModal({
 
     const msg = inputMessage;
     setInputMessage("");
+    chatInputRef.current.focus();
 
     if (onMessageSent) onMessageSent(msg);
   };
@@ -222,9 +225,9 @@ function PlayerDetailsModal({
     if (chatUnreadCount > 0) setActiveTab(tabsEnum.chat);
 
     if (activeTab == tabsEnum.chat) {
-      if (messagesRef.current) {
-        messagesRef.current.scrollTo({
-          top: messagesRef.current.scrollHeight,
+      if (messagesOuterRef.current) {
+        messagesOuterRef.current.scrollTo({
+          top: messagesOuterRef.current.scrollHeight,
         });
         if (updateChatUnreadCount) updateChatUnreadCount(0);
       }
@@ -232,9 +235,9 @@ function PlayerDetailsModal({
   }, [activeTab]);
 
   useEffect(() => {
-    if (messagesRef.current) {
-      messagesRef.current.scrollTo({
-        top: messagesRef.current.scrollHeight,
+    if (messagesOuterRef.current) {
+      messagesOuterRef.current.scrollTo({
+        top: messagesOuterRef.current.scrollHeight,
         behavior: "smooth",
       });
       if (updateChatUnreadCount) updateChatUnreadCount(0);
@@ -561,7 +564,7 @@ function PlayerDetailsModal({
   const chatDiv = useMemo(
     () => (
       <div className={styles.chatBox}>
-        <div className={styles.messagesOuter}>
+        <div className={styles.messagesOuter} ref={messagesOuterRef}>
           {roomDetails.chats?.length ? (
             <div className={styles.chatToolbar}>
               {userRole == roomUserTypeEnum.admin ||
@@ -612,7 +615,7 @@ function PlayerDetailsModal({
             ""
           )}
 
-          <div className={styles.messages} ref={messagesRef}>
+          <div className={styles.messages}>
             {Array.isArray(roomDetails.chats) && roomDetails.chats.length ? (
               roomDetails.chats.map((item, index) =>
                 getMessageDiv(
@@ -631,6 +634,8 @@ function PlayerDetailsModal({
 
         <div className={styles.footer}>
           <input
+            ref={chatInputRef}
+            type="text"
             placeholder="Type something..."
             value={inputMessage}
             onChange={(event) => setInputMessage(event.target.value)}
@@ -691,38 +696,45 @@ function PlayerDetailsModal({
       ) : (
         ""
       )}
-      <div className={styles.container}>
-        <div className={styles.roomInfo}>
-          <p className={styles.label}>You are listening in:</p>
+      <div
+        className={styles.container}
+        style={{
+          "--header-height": `${headerRef.current?.clientHeight}px`,
+        }}
+      >
+        <div className={styles.head} ref={headerRef}>
+          <div className={styles.roomInfo}>
+            <p className={styles.label}>You are listening in:</p>
 
-          <p className={styles.room}>
-            <span>
-              {"“"}
-              {roomDetails.name}
-              {"”"}
-            </span>{" "}
-            by <span>{roomDetails.owner?.name}</span>
-          </p>
-        </div>
+            <p className={styles.room}>
+              <span>
+                {"“"}
+                {roomDetails.name}
+                {"”"}
+              </span>{" "}
+              by <span>{roomDetails.owner?.name}</span>
+            </p>
+          </div>
 
-        <div className={styles.tabs}>
-          {Object.values(tabsEnum).map((item) => (
-            <div
-              key={item}
-              className={`${styles.tab} ${
-                activeTab == item ? styles.active : ""
-              }`}
-              onClick={() => setActiveTab(item)}
-            >
-              {item}
+          <div className={styles.tabs}>
+            {Object.values(tabsEnum).map((item) => (
+              <div
+                key={item}
+                className={`${styles.tab} ${
+                  activeTab == item ? styles.active : ""
+                }`}
+                onClick={() => setActiveTab(item)}
+              >
+                {item}
 
-              {item == tabsEnum.chat && chatUnreadCount > 0 ? (
-                <span className={styles.count}>{chatUnreadCount}</span>
-              ) : (
-                ""
-              )}
-            </div>
-          ))}
+                {item == tabsEnum.chat && chatUnreadCount > 0 ? (
+                  <span className={styles.count}>{chatUnreadCount}</span>
+                ) : (
+                  ""
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {activeTab == tabsEnum.playlist

@@ -7,6 +7,7 @@ const initialState = {
   joiningRoom: "",
   songUploadedTimestamp: "",
   banner: {},
+  theme: "light",
 };
 
 const rootReducer = (state = initialState, action) => {
@@ -46,6 +47,9 @@ const rootReducer = (state = initialState, action) => {
     }
     case actionTypes.SET_MOBILE_VIEW: {
       return { ...state, mobileView: action.isMobileView ? true : false };
+    }
+    case actionTypes.SET_THEME: {
+      return { ...state, theme: action.theme };
     }
 
     default:

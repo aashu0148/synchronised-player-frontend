@@ -1,22 +1,25 @@
 $mono: "Share Tech Mono", monospace;
 
-$white: #fefefe;
-$black: #040406;
-$gray: #73646f;
-$gray-2: #3f393e;
-$white-1: #fafafa;
-$white-2: #f3f0f3;
-$red: #fa3f35;
-$yellow: #f3db27;
-$blue: #27a5f3;
-$green: #21ac56;
-$light-blue: #abd5fe;
-$very-light-blue: #d3e5f7;
-$very-light-red: #ffe7e9;
-$pinkish-white: #fff4fb;
+$white: var(--var-white);
+$black: var(--var-black);
+$gray: var(--var-gray);
+$gray-2: var(--var-gray-2);
+$white-1: var(--var-white-1);
+$white-2: var(--var-white-2);
+$red: var(--var-red);
+$yellow: var(--var-yellow);
+$blue: var(--var-blue);
+$green: var(--var-green);
+$light-blue: var(--var-light-blue);
+$very-light-blue: var(--var-very-light-blue);
+$very-light-red: var(--var-very-light-red);
+$pinkish-white: var(--var-pinkish-white);
 
-$primary: #f327a5;
-$secondary: #ec74be;
+$button-color: var(--var-button-color);
+$bg-1: var(--var-bg-1);
+
+$primary: var(--var-primary);
+$secondary: var(--var-secondary);
 
 $shadow-1: 0px 0px 14px rgba(0, 0, 0, 0.1);
 $shadow-2: 1px 1px 20px rgba(0, 0, 0, 0.08);

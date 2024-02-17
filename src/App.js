@@ -15,6 +15,7 @@ import Player from "Components/Player/Player";
 
 import actionTypes from "store/actionTypes";
 import { getCurrentUser, sayHiToBackend } from "apis/user";
+import { themeEnum } from "utils/constants";
 
 import "styles/global.scss";
 
@@ -24,6 +25,7 @@ let globalRoomId;
 function App() {
   const userDetails = useSelector((state) => state.root.user);
   const roomDetails = useSelector((state) => state.root.room);
+  const currentTheme = useSelector((state) => state.root.theme);
   const dispatch = useDispatch();
 
   const [_dummyState, setDummyState] = useState(0);
@@ -109,6 +111,18 @@ function App() {
     });
   };
 
+  const computeTheme = () => {
+    const theme = localStorage.getItem("theme");
+
+    dispatch({ type: actionTypes.SET_THEME, theme: theme || "light" });
+  };
+
+  useEffect(() => {
+    if (currentTheme === themeEnum.dark)
+      document.body.className = "dark-theme-app";
+    else document.body.className = "light-theme-app";
+  }, [currentTheme]);
+
   useEffect(() => {
     if (typeof isMobileView !== "boolean") {
       setIsMobileView(window.outerWidth < 768);
@@ -142,6 +156,8 @@ function App() {
   useEffect(() => {
     handleUserDetection();
     greetBackend();
+    computeTheme();
+    setTimeout(() => handleResize({ target: window }), 300);
 
     window.addEventListener("resize", handleResize);
 
@@ -151,7 +167,7 @@ function App() {
   }, []);
 
   return appLoaded ? (
-    <div className="main-app">
+    <div className={`main-app`}>
       <BrowserRouter>
         <Toaster
           position="bottom"

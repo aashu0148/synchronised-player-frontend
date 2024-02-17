@@ -8,6 +8,64 @@
   padding: 15px 25px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
 
+  .left {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+
+    .toggle {
+      display: flex;
+      border-radius: 40px;
+      background-color: $white;
+      position: relative;
+      height: 39px;
+      padding: 2px;
+      gap: 6px;
+      z-index: 5;
+
+      .cover {
+        position: absolute;
+        top: 2px;
+        border-radius: 50%;
+        height: 35px;
+        width: 35px;
+        z-index: -1;
+        background-color: $primary;
+        transition: 300ms;
+      }
+
+      .item {
+        height: 35px;
+        width: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        svg {
+          height: 18px;
+          width: 18px;
+        }
+      }
+
+      .moon {
+        svg {
+          fill: $black;
+        }
+      }
+
+      .sun {
+        svg {
+          height: 20px;
+          width: 20px;
+          stroke-width: 2px;
+          stroke: white;
+        }
+      }
+    }
+  }
+
   .logo {
     display: flex;
     gap: 5px;

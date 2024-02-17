@@ -13,7 +13,7 @@
   font-weight: 500;
   border-radius: 5px;
   background-color: $primary;
-  color: $white;
+  color: $button-color;
   cursor: pointer;
   margin: 1px;
   transition: 200ms;
@@ -24,7 +24,7 @@
     background-position-x: 55%;
 
     .icon {
-      fill: $white;
+      fill: $button-color;
     }
   }
 
@@ -47,12 +47,12 @@
     height: 18px;
     width: 18px;
     margin-left: 8px;
-    fill: $white;
+    fill: $button-color;
   }
 }
 
 .button-outline {
-  background: $white;
+  background: $button-color;
   color: $primary;
   border: 2px solid $primary;
   font-weight: 600;
@@ -138,17 +138,17 @@
 .buttonDelete {
   width: fit-content;
   border: 1px solid $red;
-  color: $white;
+  color: $button-color;
   background: $red;
 
   &:hover {
-    background: $white;
+    background: $button-color;
     color: $red;
   }
 }
 
 .buttonDelete.button-outline {
-  background-color: $white;
+  background-color: $button-color;
   color: $red;
 }
 

@@ -4,3 +4,5 @@ export const roomUserTypeEnum = {
   controller: "controller",
   member: "member",
 };
+
+export const themeEnum = { light: "light", dark: "dark" };
