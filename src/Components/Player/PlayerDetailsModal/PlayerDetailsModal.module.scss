@@ -5,7 +5,6 @@
   max-width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 25px;
   padding: 25px;
   min-height: 400px;
 
@@ -29,6 +28,13 @@
     100% {
       transform: scaleY(0.6); /* scale down to 60% */
     }
+  }
+
+  .head {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding-bottom: 25px;
   }
 
   .musicBar {
@@ -376,8 +382,8 @@
         .deleteIcon {
           &:hover {
             svg {
-              color: $black;
-              fill: $black;
+              color: $white;
+              fill: $white;
             }
           }
 
@@ -716,7 +722,11 @@
   @media (max-width: $breakpoint-md) {
     height: 100%;
     padding: 10px;
-    gap: 20px;
+
+    .head {
+      gap: 20px;
+      padding-bottom: 20px;
+    }
 
     .roomInfo {
       .label {
@@ -788,7 +798,7 @@
     }
 
     .activityDiv {
-      max-height: calc(100% - var(--header-height) - 20px);
+      max-height: calc(100% - var(--header-height));
       padding: 5px;
 
       .activity {
@@ -841,7 +851,7 @@
     }
 
     .chatBox {
-      height: calc(100% - var(--header-height) - 18px);
+      height: calc(100% - var(--header-height));
 
       .empty {
         font-size: 16px;
