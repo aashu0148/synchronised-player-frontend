@@ -78,7 +78,10 @@ export const handleLogout = async () => {
     type: actionTypes.USER_LOGOUT,
   });
 
-  if (!window.location.href.includes("auth")) window.location.replace("/auth");
+  const href = window.location.href;
+  const queryParams = href.split("?")[1] || "";
+
+  if (!href.includes("auth")) window.location.replace(`/auth?${queryParams}`);
 };
 
 export const syncUserWithBackend = async () => {

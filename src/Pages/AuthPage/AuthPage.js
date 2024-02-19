@@ -17,7 +17,11 @@ function AuthPage() {
 
   const initializeGsi = (fallback = "") => {
     if (!window.google) return;
-    const googleRedirectUrl = `${process.env.REACT_APP_BACKEND_URL}/user/google-login?origin=${window.location.origin}&fallback=${fallback}`;
+
+    const href = window.location.href;
+    const queryParams = href.split("?")[1] || "";
+
+    const googleRedirectUrl = `${process.env.REACT_APP_BACKEND_URL}/user/google-login?origin=${window.location.origin}&fallback=${fallback}&query=${queryParams}`;
 
     setTimeout(() => setLoading(false), 1200);
 
@@ -33,6 +37,7 @@ function AuthPage() {
   };
 
   useEffect(() => {
+    const query = searchParams.get("query") || "";
     const fallback = searchParams.get("fallback");
     const accessToken = searchParams.get("accessToken");
 
@@ -40,7 +45,7 @@ function AuthPage() {
       localStorage.setItem("sleeping-token", accessToken);
 
       if (fallback && fallback !== "null") window.location.replace(fallback);
-      else window.location.replace("/");
+      else window.location.replace(query ? `/?${query}` : "/");
     }
 
     const script = document.createElement("script");
