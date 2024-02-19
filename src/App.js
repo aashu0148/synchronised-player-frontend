@@ -32,6 +32,7 @@ function App() {
   const [isMobileView, setIsMobileView] = useState("");
   const [appLoaded, setAppLoaded] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showTakingLongerMsg, setShowTakingLongerMsg] = useState(false);
 
   const greetBackend = async () => {
     await sayHiToBackend();
@@ -158,6 +159,7 @@ function App() {
     greetBackend();
     computeTheme();
     setTimeout(() => handleResize({ target: window }), 300);
+    setTimeout(() => setShowTakingLongerMsg(true), 8000);
 
     window.addEventListener("resize", handleResize);
 
@@ -198,8 +200,22 @@ function App() {
       </BrowserRouter>
     </div>
   ) : (
-    <div className="spinner-container">
-      <Spinner />
+    <div className={"app-loading"}>
+      <div>
+        <Spinner />
+      </div>
+
+      {showTakingLongerMsg ? (
+        <div className="detail">
+          <p className="title">Just a few mins</p>
+          <p className="desc">
+            It's taking longer than expected. Please wait <span>2-3mins.</span>
+            We will restart the servers for you {":)"}
+          </p>
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   );
 }
