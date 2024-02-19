@@ -228,8 +228,8 @@ function PlayerDetailsModal({
 
     navigator.share({
       url,
-      title: `${roomDetails.name} by ${roomDetails.owner?.name}`,
-      text: "Join this room on sleeping-owl and enjoy parallel listening with your friends",
+      text: `${roomDetails.name} by ${roomDetails.owner?.name}`,
+      // text: "Join this room on sleeping-owl and enjoy parallel listening with your friends",
     });
   };
 
