@@ -24,12 +24,14 @@
       font-weight: bold;
       line-height: 45px;
       text-align: center;
+      color: $title;
     }
 
     .desc {
       font-size: 18px;
       line-height: 28px;
       text-align: center;
+      color: $desc;
     }
 
     button {
