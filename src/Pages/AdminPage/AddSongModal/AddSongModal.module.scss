@@ -12,6 +12,7 @@
     font-size: 22px;
     font-weight: bold;
     line-height: 30px;
+    color: $title;
   }
 
   .form {
@@ -28,9 +29,11 @@
         font-size: 16px;
         line-height: 22px;
         font-weight: 400;
-        color: $gray-2;
+        color: $label;
 
         span {
+          color: inherit;
+          font: inherit;
           font-size: 0.875rem;
         }
       }
@@ -67,7 +70,7 @@
           font-size: 16px;
           line-height: 25px;
           font-weight: 500;
-          color: $gray;
+          color: $desc;
         }
 
         .progress {
@@ -79,7 +82,7 @@
           align-items: center;
           justify-content: center;
           gap: 10px;
-          color: $gray;
+          color: $desc;
 
           span {
             font: inherit;

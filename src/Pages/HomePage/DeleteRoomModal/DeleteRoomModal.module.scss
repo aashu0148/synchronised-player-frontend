@@ -13,6 +13,7 @@
     font-weight: bold;
     line-height: 30px;
     text-align: center;
+    color: $title;
   }
 
   .desc {
@@ -20,7 +21,7 @@
     font-weight: 500;
     line-height: 30px;
     text-align: center;
-    color: $gray;
+    color: $desc;
   }
 
   .footer {

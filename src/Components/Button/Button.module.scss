@@ -74,7 +74,7 @@
 .button-cancel {
   border: 1px solid transparent;
   background: transparent;
-  color: $black;
+  color: $title;
 
   &:hover {
     background-color: $white-1;
@@ -93,7 +93,7 @@
 .button-disabled {
   background: $white-2;
   width: fit-content;
-  color: $black;
+  color: $title;
   border-color: $gray !important;
   cursor: not-allowed;
 
@@ -103,7 +103,7 @@
 
   &:hover {
     background: $white-2;
-    color: $black;
+    color: $title;
 
     svg {
       color: $primary;

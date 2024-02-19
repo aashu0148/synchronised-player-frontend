@@ -6,7 +6,7 @@
   gap: 10px;
   padding: 6px;
   border-radius: 5px;
-  background-color: $white-2;
+  background-color: $bg-1;
   position: relative;
   z-index: 10;
   overflow: hidden;
@@ -40,7 +40,7 @@
     svg {
       height: 18px;
       width: 18px;
-      color: $black;
+      color: $title;
       transition: 200ms;
     }
 
@@ -48,7 +48,7 @@
       font-size: 16px;
       font-weight: 500;
       transform: 200ms;
-      color: $black;
+      color: $title;
       text-align: center;
       white-space: nowrap;
     }

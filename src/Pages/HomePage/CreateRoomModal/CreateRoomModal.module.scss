@@ -32,11 +32,16 @@
         display: flex;
         gap: 5px;
         align-items: center;
-        background-color: $pinkish;
+        background-color: $bg-1;
 
         p {
           font-size: 14px;
           font-weight: 600;
+          color: $title;
+        }
+
+        svg {
+          color: $title;
         }
       }
     }
