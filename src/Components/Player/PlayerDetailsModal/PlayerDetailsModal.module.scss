@@ -831,7 +831,7 @@
     }
 
     .activityDiv {
-      max-height: calc(100% - var(--header-height));
+      max-height: calc(100% - var(--header-height) - 5px);
       padding: 5px;
 
       .activity {
@@ -884,7 +884,7 @@
     }
 
     .chatBox {
-      height: calc(100% - var(--header-height));
+      height: calc(100% - var(--header-height) - 5px);
 
       .empty {
         font-size: 16px;
