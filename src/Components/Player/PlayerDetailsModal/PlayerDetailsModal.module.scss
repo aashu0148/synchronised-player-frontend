@@ -35,6 +35,26 @@
     flex-direction: column;
     gap: 25px;
     padding-bottom: 25px;
+
+    .top {
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+
+      .right {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+
+        .share {
+          svg {
+            color: $primary;
+            height: 20px;
+            width: 20px;
+          }
+        }
+      }
+    }
   }
 
   .musicBar {
@@ -726,6 +746,17 @@
     .head {
       gap: 20px;
       padding-bottom: 20px;
+
+      .top {
+        .right {
+          .share {
+            svg {
+              height: 18px;
+              width: 18px;
+            }
+          }
+        }
+      }
     }
 
     .roomInfo {

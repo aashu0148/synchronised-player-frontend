@@ -6,9 +6,13 @@ import { getCurrentUser } from "apis/user";
 
 const backendApiUrl = process.env.REACT_APP_BACKEND_URL;
 
-export const copyToClipboard = (text, hideToast = false) => {
+export const copyToClipboard = (
+  text,
+  hideToast = false,
+  toastText = "Copied"
+) => {
   if (!text) return;
-  if (!hideToast) toast.success("Copied");
+  if (!hideToast) toast.success(toastText);
   navigator.clipboard.writeText(text);
 };
 

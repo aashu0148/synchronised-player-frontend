@@ -10,6 +10,7 @@ import {
   Mic,
   MicOff,
   Send,
+  Share2,
   Shuffle,
   Volume2,
   VolumeX,
@@ -32,7 +33,7 @@ import {
   playIcon,
   playlistMusicIcon,
 } from "utils/svgs";
-import { getTimeFormatted } from "utils/util";
+import { copyToClipboard, getTimeFormatted } from "utils/util";
 import { roomUserTypeEnum } from "utils/constants";
 import {
   demoteAdmin,
@@ -219,6 +220,17 @@ function PlayerDetailsModal({
         }}
       ></p>
     );
+  };
+
+  const handleShareRoom = () => {
+    const url = `${window.location.origin}?j_room=${roomDetails._id}`;
+    copyToClipboard(url, "", "Url copied");
+
+    navigator.share({
+      url,
+      title: `${roomDetails.name} by ${roomDetails.owner?.name}`,
+      text: "Join this room on sleeping-owl and enjoy parallel listening with your friends",
+    });
   };
 
   useEffect(() => {
@@ -682,7 +694,7 @@ function PlayerDetailsModal({
   );
 
   return (
-    <Modal onClose={onClose} fullScreenInMobile>
+    <Modal onClose={onClose} fullScreenInMobile hideCloseButton>
       {selectedSongForUserRooms ? (
         <UserRoomsModal
           onClose={() => {
@@ -703,17 +715,29 @@ function PlayerDetailsModal({
         }}
       >
         <div className={styles.head} ref={headerRef}>
-          <div className={styles.roomInfo}>
-            <p className={styles.label}>You are listening in:</p>
+          <div className={styles.top}>
+            <div className={styles.roomInfo}>
+              <p className={styles.label}>You are listening in:</p>
 
-            <p className={styles.room}>
-              <span>
-                {"“"}
-                {roomDetails.name}
-                {"”"}
-              </span>{" "}
-              by <span>{roomDetails.owner?.name}</span>
-            </p>
+              <p className={styles.room}>
+                <span>
+                  {"“"}
+                  {roomDetails.name}
+                  {"”"}
+                </span>{" "}
+                by <span>{roomDetails.owner?.name}</span>
+              </p>
+            </div>
+
+            <div className={styles.right}>
+              <div
+                className={`icon ${styles.share}`}
+                title="share"
+                onClick={handleShareRoom}
+              >
+                <Share2 />
+              </div>
+            </div>
           </div>
 
           <div className={styles.tabs}>

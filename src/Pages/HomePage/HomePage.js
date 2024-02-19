@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import Button from "Components/Button/Button";
 import Spinner from "Components/Spinner/Spinner";
@@ -53,6 +54,8 @@ function HomePage({ socket }) {
   const roomDetails = useSelector((state) => state.root.room);
   const joiningRoom = useSelector((state) => state.root.joiningRoom);
   const currentTheme = useSelector((state) => state.root.theme);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const [loadingPage, setLoadingPage] = useState(true);
   const [rooms, setRooms] = useState([]);
@@ -133,11 +136,28 @@ function HomePage({ socket }) {
 
     // do not try re-fetching after getting one success response because server is now awake
     pageRefreshRetries.current = 5;
+    if (!doNotChangeColors) {
+      joinRoomFromUrlIfPresent(res.data);
+    }
   };
 
   const handleSongUploaded = () => {
     dispatch({ type: actionTypes.NEW_SONG_UPLOADED });
   };
+
+  function joinRoomFromUrlIfPresent(rooms) {
+    const joinRoom = searchParams.get("j_room");
+    if (!Array.isArray(rooms) || !joinRoom) return;
+
+    const room = rooms.find((r) => r._id === joinRoom);
+
+    navigate("/", { replace: true });
+    if (roomDetails._id === room._id)
+      // already in that room
+      return;
+
+    handleJoinRoom(room._id);
+  }
 
   useEffect(() => {
     setRooms((prev) =>
