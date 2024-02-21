@@ -209,7 +209,7 @@ function App() {
         <div className="detail">
           <p className="title">Just a few mins</p>
           <p className="desc">
-            It's taking longer than expected. Please wait <span>2-3mins.</span>
+            It's taking longer than expected. Please wait <span>2-3mins. </span>
             We will restart the servers for you {":)"}
           </p>
         </div>

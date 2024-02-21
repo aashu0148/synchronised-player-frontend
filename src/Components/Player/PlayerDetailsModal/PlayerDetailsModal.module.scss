@@ -611,7 +611,7 @@
         width: fit-content;
         max-width: 80%;
         display: flex;
-        gap: 15px;
+        gap: 8px;
         align-items: flex-start;
         min-width: 180px;
 
@@ -831,7 +831,7 @@
     }
 
     .activityDiv {
-      max-height: calc(100% - var(--header-height) - 5px);
+      max-height: calc(100% - var(--header-height) - 2px);
       padding: 5px;
 
       .activity {
@@ -884,7 +884,7 @@
     }
 
     .chatBox {
-      height: calc(100% - var(--header-height) - 5px);
+      height: calc(100% - var(--header-height) - 2px);
 
       .empty {
         font-size: 16px;
@@ -894,6 +894,7 @@
         .chatToolbar {
           top: -1px;
           padding: 6px 10px;
+          gap: 10px;
 
           button {
             svg {
@@ -906,7 +907,7 @@
 
       .messages {
         .message {
-          gap: 10px;
+          gap: 5px;
           max-width: 90%;
 
           .image {
@@ -929,6 +930,7 @@
               padding: 8px;
               padding-top: 0;
               font-size: 14px;
+              line-height: 20px;
               padding-bottom: 16px;
             }
 
