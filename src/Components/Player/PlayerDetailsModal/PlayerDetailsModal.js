@@ -279,7 +279,10 @@ function PlayerDetailsModal({
 
   const playlistDiv = useMemo(
     () => (
-      <DragDropContext onDragEnd={handleDragEnd}>
+      <DragDropContext
+        onDragEnd={handleDragEnd}
+        // autoScrollerOptions={{ startFromPercentage: 0.1 }}
+      >
         <Droppable droppableId="playlist-droppable">
           {(provided) => (
             <div
