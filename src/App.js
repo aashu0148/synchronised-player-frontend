@@ -49,7 +49,7 @@ function App() {
     let res = await getCurrentUser();
     setAppLoaded(true);
     if (!res) {
-      localStorage.removeItem("sleeping-token");
+      // localStorage.removeItem("sleeping-token");
       return;
     }
     setIsAuthenticated(true);
@@ -158,7 +158,15 @@ function App() {
     handleUserDetection();
     greetBackend();
     computeTheme();
-    setTimeout(() => handleResize({ target: window }), 300);
+    setTimeout(() => {
+      handleResize({ target: window });
+
+      if (
+        window.location.href.includes("?modal") &&
+        window.location.pathname === "/"
+      )
+        window.location.replace("/");
+    }, 300);
     setTimeout(() => setShowTakingLongerMsg(true), 8000);
 
     window.addEventListener("resize", handleResize);
