@@ -550,7 +550,7 @@ function PlayerDetailsModal({
     index
   ) => {
     const message = chat.message;
-    const biggerMessage = message.length < 5 && isEmojiPresentInString(message);
+    const biggerMessage = message.length < 9 && isEmojiPresentInString(message);
 
     return (
       <div
