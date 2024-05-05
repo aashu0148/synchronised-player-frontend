@@ -650,8 +650,12 @@
             padding-top: 0;
             padding-bottom: 22px;
             font-size: 16px;
-            line-height: 25px;
+            line-height: 1.5;
             word-break: break-word;
+
+            &.bigText {
+              font-size: 46px;
+            }
           }
 
           .timestamp {

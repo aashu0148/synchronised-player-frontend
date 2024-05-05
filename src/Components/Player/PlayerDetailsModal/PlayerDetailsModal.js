@@ -33,7 +33,11 @@ import {
   playIcon,
   playlistMusicIcon,
 } from "utils/svgs";
-import { copyToClipboard, getTimeFormatted } from "utils/util";
+import {
+  copyToClipboard,
+  getTimeFormatted,
+  isEmojiPresentInString,
+} from "utils/util";
 import { roomUserTypeEnum } from "utils/constants";
 import {
   demoteAdmin,
@@ -545,6 +549,9 @@ function PlayerDetailsModal({
     isConcurrent = false,
     index
   ) => {
+    const message = chat.message;
+    const biggerMessage = message.length < 5 && isEmojiPresentInString(message);
+
     return (
       <div
         key={chat.user.name + "" + index}
@@ -569,7 +576,11 @@ function PlayerDetailsModal({
 
         <div className={`${styles.inner}`}>
           {!isConcurrent && <p className={styles.name}>{chat.user?.name}</p>}
-          <p className={styles.text}>{chat.message}</p>
+          <p
+            className={`${styles.text} ${biggerMessage ? styles.bigText : ""}`}
+          >
+            {message}
+          </p>
           <p className={styles.timestamp}>{getTimeFormatted(chat.timestamp)}</p>
         </div>
       </div>

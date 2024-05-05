@@ -301,3 +301,5 @@ export const getSongUrlFromBackupStorage = (url) => {
 
   return { success: true, url: newUrl };
 };
+
+export const isEmojiPresentInString = (str) => /\p{Emoji}/u.test(str);
