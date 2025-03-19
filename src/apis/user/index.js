@@ -79,3 +79,43 @@ export const sayHiToBackend = async () => {
     return false;
   }
 };
+
+export const loginWithCredentials = async (values) => {
+  const reqPath = `/user/login`;
+  try {
+    const response = await fetchWrapper(reqPath, values, "", "", true);
+    const data = await response.json();
+    if (!data?.success) {
+      errorToastLogger(
+        "loginWithCredentials",
+        data?.message || "Failed to login",
+        data?.error
+      );
+      return false;
+    }
+    return data;
+  } catch (err) {
+    errorToastLogger("loginWithCredentials", "Failed to login", err);
+    return false;
+  }
+};
+
+export const registerUser = async (values) => {
+  const reqPath = `/user/register`;
+  try {
+    const response = await fetchWrapper(reqPath, values, "", "", true);
+    const data = await response.json();
+    if (!data?.success) {
+      errorToastLogger(
+        "registerUser",
+        data?.message || "Failed to register",
+        data?.error
+      );
+      return false;
+    }
+    return data;
+  } catch (err) {
+    errorToastLogger("registerUser", "Failed to register", err);
+    return false;
+  }
+};

@@ -3,8 +3,10 @@ import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import Button from "Components/Button/Button";
+import InputControl from "Components/InputControl/InputControl";
 
 import styles from "./AuthPage.module.scss";
+import { loginWithCredentials, registerUser } from "apis/user/index";
 
 function AuthPage() {
   const googleSignInButtonRef = useRef();
@@ -14,15 +16,28 @@ function AuthPage() {
   const [searchParams] = useSearchParams();
 
   const [loading, setLoading] = useState(true);
+  const [authMode, setAuthMode] = useState("login");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
 
   const initializeGsi = (fallback = "") => {
     if (!window.google) return;
 
     const href = window.location.href;
-    const queryParams = href.split("?")[1] || "";
+    // const queryParams = href.split("?")[1] || "";
 
-    const googleRedirectUrl = `${process.env.REACT_APP_BACKEND_URL}/user/google-login?origin=${window.location.origin}&fallback=${fallback}&query=${queryParams}`;
+    const search = `?origin=${window.location.origin}`;
+    const googleRedirectUrl = `${process.env.REACT_APP_BACKEND_URL}/user/google-login${search}`;
+    // const search = `?origin=${window.location.origin}&fallback=${
+    //   fallback || ""
+    // }&query=${queryParams}`;
 
+    console.log({ googleRedirectUrl });
     setTimeout(() => setLoading(false), 1200);
 
     window.google.accounts.id.initialize({
@@ -66,22 +81,135 @@ function AuthPage() {
     if (userDetails._id) navigate("/");
   }, []);
 
-  return (
-    <div className={styles.container}>
-      <div className={styles.box}>
-        <p className={styles.title}>Welcome buddy!</p>
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
+  };
 
-        <p className={styles.desc}>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (
+      authMode === "register" &&
+      formData.password !== formData.confirmPassword
+    ) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    try {
+      const values = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      };
+
+      const data =
+        authMode === "login"
+          ? await loginWithCredentials(values)
+          : await registerUser(values);
+
+      if (!data) {
+        throw new Error("Authentication failed");
+      }
+
+      localStorage.setItem("sleeping-token", data.data?.token);
+      window.location.replace("/");
+    } catch (err) {
+      setError(err.message || "Something went wrong");
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-[var(--var-bg)] px-4">
+      <div className="w-full max-w-md bg-[var(--var-bg-1)] rounded-lg shadow-lg p-8">
+        <h1 className="text-2xl font-bold text-center text-[var(--var-heading)] mb-2">
+          Welcome buddy!
+        </h1>
+        <p className="text-[var(--var-desc)] text-center mb-6">
           I hope you are having a fantastic day! If not then don't worry, just
           login and make your mood with music
         </p>
-
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
+          {authMode === "register" && (
+            <InputControl
+              label="Name"
+              type="text"
+              name="name"
+              placeholder="Enter your name"
+              value={formData.name}
+              onChange={handleInputChange}
+              required
+            />
+          )}
+          <InputControl
+            label="Email"
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={handleInputChange}
+            required
+          />
+          <InputControl
+            label="Password"
+            name="password"
+            placeholder="Enter your password"
+            value={formData.password}
+            onChange={handleInputChange}
+            password
+            required
+          />
+          {authMode === "register" && (
+            <InputControl
+              label="Confirm Password"
+              name="confirmPassword"
+              placeholder="Confirm your password"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              password={true}
+              required
+            />
+          )}
+          {error && (
+            <p className="text-[var(--var-red)] text-sm mt-2">{error}</p>
+          )}
+          <Button
+            type="submit"
+            className="!w-full py-2 bg-[var(--var-white)] hover:bg-[var(--var-secondary)] text-[var(--var-button-color)] rounded-md transition-colors duration-200"
+          >
+            {authMode === "login" ? "Login" : "Register"}
+          </Button>
+          <p className="text-center text-sm mt-3 text-[var(--var-desc)]">
+            {authMode === "login"
+              ? "Don't have an account? "
+              : "Already have an account? "}
+            <span
+              onClick={() =>
+                setAuthMode(authMode === "login" ? "register" : "login")
+              }
+              className="text-[var(--var-white)] cursor-pointer hover:underline font-medium"
+            >
+              {authMode === "login" ? "Register" : "Login"}
+            </span>
+          </p>
+        </form>
+        <div className="flex items-center my-6">
+          <div className="flex-grow h-px bg-[var(--var-gray)]"></div>
+          <span className="px-4 text-sm text-[var(--var-label)] font-medium">
+            OR
+          </span>
+          <div className="flex-grow h-px bg-[var(--var-gray)]"></div>
+        </div>
         <Button
+          outlineButton
           onClick={() =>
             googleSignInButtonRef.current
               ? googleSignInButtonRef.current.click()
               : ""
           }
+          className="!mx-auto !px-4 !p-2"
           disabled={loading}
           useSpinnerWhenDisabled
         >
@@ -91,7 +219,7 @@ function AuthPage() {
             id="g_id_signin"
             data-width={isMobileView ? 350 : 410}
           />
-          Google login
+          Continue with Google
         </Button>
       </div>
     </div>

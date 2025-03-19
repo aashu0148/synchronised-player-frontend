@@ -59,7 +59,7 @@ function App() {
   };
 
   const handleResize = (event) => {
-    const width = event.target.outerWidth;
+    const width = event.target.innerWidth;
     if (width < 768) setIsMobileView(true);
     else setIsMobileView(false);
   };
@@ -120,8 +120,8 @@ function App() {
 
   useEffect(() => {
     if (currentTheme === themeEnum.dark)
-      document.body.className = "dark-theme-app";
-    else document.body.className = "light-theme-app";
+      document.body.className = "dark-theme-app dark";
+    else document.body.className = "light-theme-app light";
   }, [currentTheme]);
 
   useEffect(() => {
