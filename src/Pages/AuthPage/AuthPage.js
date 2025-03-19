@@ -15,6 +15,7 @@ function AuthPage() {
   const isMobileView = useSelector((state) => state.root.mobileView);
   const [searchParams] = useSearchParams();
 
+  const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authMode, setAuthMode] = useState("login");
   const [formData, setFormData] = useState({
@@ -105,6 +106,7 @@ function AuthPage() {
         password: formData.password,
       };
 
+      setSubmitting(true);
       const data =
         authMode === "login"
           ? await loginWithCredentials(values)
@@ -118,6 +120,8 @@ function AuthPage() {
       window.location.replace("/");
     } catch (err) {
       setError(err.message || "Something went wrong");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -178,6 +182,8 @@ function AuthPage() {
           <Button
             type="submit"
             className="!w-full py-2 bg-[var(--var-white)] hover:bg-[var(--var-secondary)] text-[var(--var-button-color)] rounded-md transition-colors duration-200"
+            useSpinnerWhenDisabled
+            disabled={submitting}
           >
             {authMode === "login" ? "Login" : "Register"}
           </Button>
@@ -202,6 +208,7 @@ function AuthPage() {
           </span>
           <div className="flex-grow h-px bg-[var(--var-gray)]"></div>
         </div>
+
         <Button
           outlineButton
           onClick={() =>
