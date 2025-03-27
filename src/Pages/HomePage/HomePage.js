@@ -307,7 +307,11 @@ function HomePage({ socket }) {
                           <div
                             key={item._id || item.name}
                             className={styles.profile}
-                            style={{ left: `${i * 25}px` }}
+                            style={{
+                              left: `${i * 25}px`,
+                              width: "30px",
+                              height: "30px",
+                            }}
                           >
                             <img
                               src={item.profileImage}
