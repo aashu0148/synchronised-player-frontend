@@ -1083,6 +1083,7 @@ function Player({ socket }) {
             />
 
             <input
+              className={styles.progressInput}
               type="range"
               onMouseDown={handleInputMousedown}
               onTouchStart={handleInputMousedown}

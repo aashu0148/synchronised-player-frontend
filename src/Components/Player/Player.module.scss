@@ -1,5 +1,15 @@
 @import "styles/variables";
 
+.progressInput {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 80;
+  opacity: 0;
+  width: calc(100% + 5px);
+  height: 7px;
+}
+
 .container {
   position: fixed;
   z-index: 100;
@@ -265,15 +275,6 @@
             background-color: $yellow;
             z-index: 5;
           }
-        }
-
-        input {
-          position: absolute;
-          top: -4px;
-          left: 0;
-          z-index: 10;
-          opacity: 0;
-          width: calc(100% + 5px);
         }
       }
     }
