@@ -26,31 +26,31 @@ function AuthPage() {
   });
   const [error, setError] = useState("");
 
-  const initializeGsi = (fallback = "") => {
-    if (!window.google) return;
+  // const initializeGsi = (fallback = "") => {
+  //   if (!window.google) return;
 
-    const href = window.location.href;
-    // const queryParams = href.split("?")[1] || "";
+  //   const href = window.location.href;
+  //   // const queryParams = href.split("?")[1] || "";
 
-    const search = `?origin=${window.location.origin}`;
-    const googleRedirectUrl = `${process.env.REACT_APP_BACKEND_URL}/user/google-login${search}`;
-    // const search = `?origin=${window.location.origin}&fallback=${
-    //   fallback || ""
-    // }&query=${queryParams}`;
+  //   const search = `?origin=${window.location.origin}`;
+  //   const googleRedirectUrl = `${process.env.REACT_APP_BACKEND_URL}/user/google-login${search}`;
+  //   // const search = `?origin=${window.location.origin}&fallback=${
+  //   //   fallback || ""
+  //   // }&query=${queryParams}`;
 
-    console.log({ googleRedirectUrl });
-    setTimeout(() => setLoading(false), 1200);
+  //   console.log({ googleRedirectUrl });
+  //   setTimeout(() => setLoading(false), 1200);
 
-    window.google.accounts.id.initialize({
-      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-      ux_mode: "redirect",
-      login_uri: googleRedirectUrl,
-    });
-    window.google.accounts.id.renderButton(
-      document.getElementById("g_id_signin"),
-      { theme: "outline", size: "large", width: 390 }
-    );
-  };
+  //   window.google.accounts.id.initialize({
+  //     client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+  //     ux_mode: "redirect",
+  //     login_uri: googleRedirectUrl,
+  //   });
+  //   window.google.accounts.id.renderButton(
+  //     document.getElementById("g_id_signin"),
+  //     { theme: "outline", size: "large", width: 390 }
+  //   );
+  // };
 
   useEffect(() => {
     const query = searchParams.get("query") || "";
@@ -64,18 +64,18 @@ function AuthPage() {
       else window.location.replace(query ? `/?${query}` : "/");
     }
 
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.onload = () => initializeGsi(fallback);
-    script.async = true;
-    script.id = "google-client-script";
-    document.body.appendChild(script);
+    // const script = document.createElement("script");
+    // script.src = "https://accounts.google.com/gsi/client";
+    // script.onload = () => initializeGsi(fallback);
+    // script.async = true;
+    // script.id = "google-client-script";
+    // document.body.appendChild(script);
 
-    return () => {
-      if (window.google) window.google.accounts.id.cancel();
+    // return () => {
+    //   if (window.google) window.google.accounts.id.cancel();
 
-      document.getElementById("google-client-script")?.remove();
-    };
+    //   document.getElementById("google-client-script")?.remove();
+    // };
   }, []);
 
   useEffect(() => {
@@ -201,33 +201,6 @@ function AuthPage() {
             </span>
           </p>
         </form>
-        <div className="flex items-center my-6">
-          <div className="flex-grow h-px bg-[var(--var-gray)]"></div>
-          <span className="px-4 text-sm text-[var(--var-label)] font-medium">
-            OR
-          </span>
-          <div className="flex-grow h-px bg-[var(--var-gray)]"></div>
-        </div>
-
-        <Button
-          outlineButton
-          onClick={() =>
-            googleSignInButtonRef.current
-              ? googleSignInButtonRef.current.click()
-              : ""
-          }
-          className="!mx-auto !px-4 !p-2"
-          disabled={loading}
-          useSpinnerWhenDisabled
-        >
-          <div
-            className={styles.actualGoogleButton}
-            ref={googleSignInButtonRef}
-            id="g_id_signin"
-            data-width={isMobileView ? 350 : 410}
-          />
-          Continue with Google
-        </Button>
       </div>
     </div>
   );
